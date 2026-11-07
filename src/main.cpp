@@ -25,14 +25,20 @@ namespace {
         draw->drawPolygon(pts, n, fill, 2.f, border);
     }
 
-    const char* toolText(const char* id) {
-        if (!strcmp(id, "glow")) return voidlight::GLOW_GUIDE;
-        if (!strcmp(id, "color")) return voidlight::COLOR_GUIDE;
-        if (!strcmp(id, "styles")) return voidlight::STYLE_BOOK;
-        if (!strcmp(id, "objects")) return voidlight::OBJECT_HELPER_GUIDE;
-        if (!strcmp(id, "planner")) return voidlight::LEVEL_PLANNER_GUIDE;
-        if (!strcmp(id, "music")) return voidlight::MUSIC_MATCHER_GUIDE;
-        return voidlight::DECOR_AI_GUIDE;
+    const char* toolText(int id) {
+        switch (id) {
+            case 1: return voidlight::GLOW_GUIDE;
+            case 2: return voidlight::COLOR_GUIDE;
+            case 3: return voidlight::STYLE_BOOK;
+            case 4: return voidlight::OBJECT_HELPER_GUIDE;
+            case 5: return voidlight::LEVEL_PLANNER_GUIDE;
+            case 6: return voidlight::MUSIC_MATCHER_GUIDE;
+            case 7: return voidlight::AUTO_DECOR_GUIDE;
+            case 8: return voidlight::PERFORMANCE_HELPER_GUIDE;
+            case 9: return voidlight::SCREENSHOT_ANALYZER_GUIDE;
+            case 10: return voidlight::MY_PROJECTS_GUIDE;
+            default: return voidlight::DECOR_AI_GUIDE;
+        }
     }
 }
 
@@ -74,10 +80,7 @@ class $modify(VoidlightEditorUI, EditorUI) {
     void showTool(CCObject* sender) {
         auto item = typeinfo_cast<CCMenuItem*>(sender);
         if (!item) return;
-        auto id = item->getTag();
-        const char* key = id == 1 ? "glow" : id == 2 ? "color" : id == 3 ? "styles" :
-                          id == 4 ? "objects" : id == 5 ? "planner" : "music";
-        FLAlertLayer::create("VOIDLIGHT", toolText(key), "OK")->show();
+        FLAlertLayer::create("VOIDLIGHT", toolText(item->getTag()), "OK")->show();
     }
 
     void onVoidlight(CCObject*) {
@@ -86,7 +89,8 @@ class $modify(VoidlightEditorUI, EditorUI) {
             return;
         }
         auto win = CCDirector::sharedDirector()->getWinSize();
-        const float w = 330.f, h = 252.f;
+        const float w = 330.f, h = 370.f;
+        const float uiScale = 0.58f;
         auto panel = CCNode::create();
         panel->setContentSize({w, h});
         panel->setAnchorPoint({0.f, 0.f});
@@ -118,8 +122,11 @@ class $modify(VoidlightEditorUI, EditorUI) {
         actions->setPosition(CCPointZero);
         actions->addChild(close);
 
-        const char* names[] = {"Glow Lab", "Color Lab", "Style Book", "Object Helper", "Level Planner", "Music Matcher"};
-        for (int i = 0; i < 6; ++i) {
+        const char* names[] = {
+            "Glow Lab", "Color Lab", "Style Book", "Object Helper", "Level Planner",
+            "Music Matcher", "Auto Decor", "Performance", "Screenshot", "My Projects"
+        };
+        for (int i = 0; i < 10; ++i) {
             float x = (i % 2 == 0) ? 91.f : 244.f;
             float y = h - 91.f - (i / 2) * 48.f;
             auto shape = CCNode::create();
@@ -146,7 +153,8 @@ class $modify(VoidlightEditorUI, EditorUI) {
         hint->setPosition({22.f, 18.f});
         panel->addChild(hint, 2);
 
-        panel->setPosition({win.width - w - 16.f, win.height - h - 58.f});
+        panel->setScale(uiScale);
+        panel->setPosition({win.width - w * uiScale - 16.f, win.height - h * uiScale - 58.f});
         this->addChild(panel, 1100);
         m_fields->panel = panel;
     }
