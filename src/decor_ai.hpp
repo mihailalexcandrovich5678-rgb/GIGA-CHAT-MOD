@@ -30,4 +30,3 @@ inline constexpr char DECOR_AI_GUIDE[] =
     "<co>AI TIP</c>\n"
     "Start with the silhouette. Add details in layers, and keep the gameplay readable.";
 }
-}
