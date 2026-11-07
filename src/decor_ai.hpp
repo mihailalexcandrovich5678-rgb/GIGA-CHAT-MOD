@@ -80,6 +80,28 @@ inline constexpr char MUSIC_MATCHER_GUIDE[] =
     "5. Mark important beats and section changes before decorating.\n\n"
     "This guide suggests music characteristics, not a live song catalogue. Check track availability and permissions in the game.";
 
+inline constexpr char PERFORMANCE_HELPER_GUIDE[] =
+    "<cy>PERFORMANCE HELPER</c>\\n\\n"
+    "Use this checklist to keep a level readable and easier to run:\\n"
+    "1. Avoid unnecessary layers of overlapping effects.\\n"
+    "2. Reuse a small set of detail patterns instead of duplicating huge groups.\\n"
+    "3. Keep gameplay-critical objects visually clear.\\n"
+    "4. Test dense sections on the device that will play the level.\\n"
+    "5. Reduce decorative particles and pulse effects if the scene feels busy.\\n\\n"
+    "This helper gives optimization advice; it does not measure FPS or inspect the running level.";
+
+inline constexpr char SCREENSHOT_ANALYZER_GUIDE[] =
+    "<cy>SCREENSHOT ANALYZER</c>\\n\\n"
+    "Screenshot analysis is not connected in this build.\\n"
+    "For a manual review, check: gameplay readability, contrast, visual hierarchy, spacing, color balance and decoration density.\\n"
+    "A real analyzer needs image input and an AI service; this button does not pretend to analyze an image.";
+
+inline constexpr char MY_PROJECTS_GUIDE[] =
+    "<cy>MY PROJECTS</c>\\n\\n"
+    "Project slots are not saved in this build yet.\\n"
+    "For now, keep a short project note with: level name, song, theme, palette, current section and next task.\\n"
+    "Persistent project storage will be added separately; this screen does not claim to save data.";
+
 inline constexpr char AUTO_DECOR_GUIDE[] =
     "<cy>AUTO DECOR — EXPERIMENTAL PROTOTYPE</c>\n\n"
     "This first prototype creates a decoration plan, not edits to your level.\n\n"
