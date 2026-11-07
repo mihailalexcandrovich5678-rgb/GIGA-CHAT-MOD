@@ -1,5 +1,6 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/MenuLayer.hpp>
+#include "decor_ai.hpp"
 
 using namespace geode::prelude;
 
