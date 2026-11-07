@@ -25,6 +25,14 @@ namespace {
         showTool("COLOR LAB", voidlight::COLOR_GUIDE);
     }
 
+    void showLevelPlanner() {
+        showTool("LEVEL PLANNER", voidlight::LEVEL_PLANNER_GUIDE);
+    }
+
+    void showMusicMatcher() {
+        showTool("MUSIC MATCHER", voidlight::MUSIC_MATCHER_GUIDE);
+    }
+
     void showAutoDecor() {
         showTool("AUTO DECOR — EXPERIMENTAL", voidlight::AUTO_DECOR_GUIDE);
     }
@@ -52,7 +60,7 @@ class $modify(VoidlightMenuLayer, MenuLayer) {
             {"STYLES", menu_selector(VoidlightMenuLayer::onStyleBook)},
             {"GLOW", menu_selector(VoidlightMenuLayer::onGlowLab)},
             {"COLORS", menu_selector(VoidlightMenuLayer::onColorLab)},
-            {"AUTO", menu_selector(VoidlightMenuLayer::onAutoDecor)}
+            {"AUTO", menu_selector(VoidlightMenuLayer::onAutoDecor)},\n            {"PLAN", menu_selector(VoidlightMenuLayer::onLevelPlanner)},\n            {"MUSIC", menu_selector(VoidlightMenuLayer::onMusicMatcher)}
         };
 
         for (auto const& tool : tools) {
@@ -85,5 +93,5 @@ class $modify(VoidlightMenuLayer, MenuLayer) {
     void onStyleBook(CCObject*) { showStyleBook(); }
     void onGlowLab(CCObject*) { showGlowLab(); }
     void onColorLab(CCObject*) { showColorLab(); }
-    void onAutoDecor(CCObject*) { showAutoDecor(); }
+    void onAutoDecor(CCObject*) { showAutoDecor(); }\n    void onLevelPlanner(CCObject*) { showLevelPlanner(); }\n    void onMusicMatcher(CCObject*) { showMusicMatcher(); }
 };
