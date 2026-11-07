@@ -1,15 +1,15 @@
 {
-	"geode": "5.11.2",
-	"gd": {
-		"win": "2.2081",
-		"android": "2.2081"
-	},
-	"id": "gigachat.giga-chat-mod",
-	"name": "GIGA-CHAT-MOD",
-	"version": "v1.2.0",
-	"developer": "GigaChat",
-	"description": "Voidlight tools: Decor AI, style book, Glow Lab, Color Lab, Auto Decor, Level Planner and Music Matcher.",
-	"dependencies": {
-		"geode.node-ids": ">=v1.23.3"
-	}
+  "geode": "5.11.2",
+  "gd": {
+    "win": "2.2081",
+    "android": "2.2081"
+  },
+  "id": "gigachat.giga-chat-mod",
+  "name": "GIGA-CHAT-MOD",
+  "version": "v1.2.1",
+  "developer": "GigaChat",
+  "description": "Voidlight v1.2.1: offline Decor AI panel, Glow Lab, Color Lab, Style Book, Object Helper, Level Planner, Music Matcher, Screenshot Analyzer, Performance Helper, My Projects and experimental Auto Decor.",
+  "dependencies": {
+    "geode.node-ids": ">=v1.23.3"
+  }
 }
