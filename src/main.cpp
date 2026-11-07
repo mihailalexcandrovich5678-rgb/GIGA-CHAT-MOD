@@ -1,101 +1,64 @@
 #include <Geode/Geode.hpp>
-#include <Geode/modify/MenuLayer.hpp>
+#include <Geode/modify/EditorUI.hpp>
 #include "decor_ai.hpp"
 
 using namespace geode::prelude;
 
 namespace {
-    void showTool(const char* title, const char* body) {
-        FLAlertLayer::create(title, body, "CLOSE")->show();
-    }
-
-    void showDecorAI() {
-        showTool("DECOR AI", voidlight::DECOR_AI_GUIDE);
-    }
-
-    void showStyleBook() {
-        showTool("VOIDLIGHT — STYLE BOOK", voidlight::STYLE_BOOK);
-    }
-
-    void showGlowLab() {
-        showTool("GLOW LAB", voidlight::GLOW_GUIDE);
-    }
-
-    void showColorLab() {
-        showTool("COLOR LAB", voidlight::COLOR_GUIDE);
-    }
-
-    void showLevelPlanner() {
-        showTool("LEVEL PLANNER", voidlight::LEVEL_PLANNER_GUIDE);
-    }
-
-    void showMusicMatcher() {
-        showTool("MUSIC MATCHER", voidlight::MUSIC_MATCHER_GUIDE);
-    }
-
-    void showAutoDecor() {
-        showTool("AUTO DECOR — EXPERIMENTAL", voidlight::AUTO_DECOR_GUIDE);
+    void showVoidlightPanel() {
+        FLAlertLayer::create(
+            "VOIDLIGHT",
+            "DECOR AI\\n\\n"
+            "Your Geometry Dash decoration assistant.\\n\\n"
+            "Available guide sections: Glow Lab, Color Lab, Style Book, "
+            "Level Planner, Music Matcher and experimental Auto Decor.\\n\\n"
+            "Choose a guide from the next update of the panel.",
+            "CLOSE"
+        )->show();
     }
 }
 
-class $modify(VoidlightMenuLayer, MenuLayer) {
-    bool init() {
-        if (!MenuLayer::init()) {
+class $modify(VoidlightEditorUI, EditorUI) {
+    bool init(LevelEditorLayer* editorLayer) {
+        if (!EditorUI::init(editorLayer)) {
             return false;
         }
 
-        auto menu = this->getChildByID("bottom-menu");
-        if (!menu) {
-            log::warn("Voidlight: bottom-menu node was not found.");
+        auto winSize = CCDirector::sharedDirector()->getWinSize();
+
+        auto label = CCLabelBMFont::create("VOIDLIGHT", "bigFont.fnt");
+        if (!label) {
+            log::warn("Voidlight: failed to create editor button label.");
             return true;
         }
+        label->setScale(0.42f);
 
-        struct ToolButton {
-            const char* label;
-            SEL_MenuHandler callback;
-        };
-
-        ToolButton tools[] = {
-            {"VOIDLIGHT", menu_selector(VoidlightMenuLayer::onDecorAI)},
-            {"STYLES", menu_selector(VoidlightMenuLayer::onStyleBook)},
-            {"GLOW", menu_selector(VoidlightMenuLayer::onGlowLab)},
-            {"COLORS", menu_selector(VoidlightMenuLayer::onColorLab)},
-            {"AUTO", menu_selector(VoidlightMenuLayer::onAutoDecor)},
-            {"PLAN", menu_selector(VoidlightMenuLayer::onLevelPlanner)},
-            {"MUSIC", menu_selector(VoidlightMenuLayer::onMusicMatcher)}
-        };
-
-        for (auto const& tool : tools) {
-            auto label = CCLabelBMFont::create(tool.label, "bigFont.fnt");
-            if (!label) {
-                log::warn("Voidlight: failed to create a tool label.");
-                continue;
-            }
-            label->setScale(0.32f);
-
-            auto button = CCMenuItemSpriteExtra::create(
-                label,
-                this,
-                tool.callback
-            );
-            if (!button) {
-                log::warn("Voidlight: failed to create a tool button.");
-                continue;
-            }
-
-            button->setID(("voidlight-" + std::string(tool.label)) .c_str());
-            menu->addChild(button);
+        auto button = CCMenuItemSpriteExtra::create(
+            label,
+            this,
+            menu_selector(VoidlightEditorUI::onVoidlight)
+        );
+        if (!button) {
+            log::warn("Voidlight: failed to create editor button.");
+            return true;
         }
+        button->setID("gigachat-voidlight-editor-button");
 
-        menu->updateLayout();
+        auto menu = CCMenu::create();
+        if (!menu) {
+            log::warn("Voidlight: failed to create editor button menu.");
+            return true;
+        }
+        menu->setPosition(CCPointZero);
+        menu->addChild(button);
+        button->setPosition({winSize.width - 170.f, winSize.height - 42.f});
+        this->addChild(menu, 1000, "gigachat-voidlight-editor-menu");
+
+        log::info("Voidlight: editor button added.");
         return true;
     }
 
-    void onDecorAI(CCObject*) { showDecorAI(); }
-    void onStyleBook(CCObject*) { showStyleBook(); }
-    void onGlowLab(CCObject*) { showGlowLab(); }
-    void onColorLab(CCObject*) { showColorLab(); }
-    void onAutoDecor(CCObject*) { showAutoDecor(); }
-    void onLevelPlanner(CCObject*) { showLevelPlanner(); }
-    void onMusicMatcher(CCObject*) { showMusicMatcher(); }
+    void onVoidlight(CCObject*) {
+        showVoidlightPanel();
+    }
 };
