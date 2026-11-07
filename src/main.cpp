@@ -82,7 +82,7 @@ class $modify(VoidlightEditorUI, EditorUI) {
         m_fields->input->setString("");
         m_fields->request.spawn(
             req.post(endpoint+"/chat"),
-            [this](web::WebResponse response) {
+            [this, message](web::WebResponse response) {
                 m_fields->waiting=false;
                 if(!m_fields->panel) return;
                 if(!response.ok()) {
