@@ -62,7 +62,7 @@ class $modify(VoidlightEditorUI, EditorUI) {
     void sendMessage(CCObject*) {
         if(m_fields->waiting) { appendConversation("VOIDLIGHT\nPlease wait for the current answer..."); return; }
         if(!m_fields->input) return;
-        auto message=m_fields->input->getString();
+        std::string message=m_fields->input->getString().c_str();
         if(message.empty()) { appendConversation("VOIDLIGHT\nWrite a question first."); return; }
         if(message.size()>4000) { appendConversation("VOIDLIGHT\nMessage is too long (max 4000 characters)."); return; }
         auto endpoint=Mod::get()->getSettingValue<std::string>("server-url");
