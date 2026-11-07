@@ -26,15 +26,16 @@ class $modify(VoidlightEditorUI, EditorUI) {
 
         auto winSize = CCDirector::sharedDirector()->getWinSize();
 
-        auto label = CCLabelBMFont::create("VOIDLIGHT", "bigFont.fnt");
-        if (!label) {
-            log::warn("Voidlight: failed to create editor button label.");
+        // Use the same in-game options gear artwork so the Voidlight control
+        // has a familiar Geometry Dash shape and a matching visual size.
+        auto sprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+        if (!sprite) {
+            log::warn("Voidlight: options button sprite was not found.");
             return true;
         }
-        label->setScale(0.42f);
 
         auto button = CCMenuItemSpriteExtra::create(
-            label,
+            sprite,
             this,
             menu_selector(VoidlightEditorUI::onVoidlight)
         );
@@ -51,7 +52,7 @@ class $modify(VoidlightEditorUI, EditorUI) {
         }
         menu->setPosition(CCPointZero);
         menu->addChild(button);
-        button->setPosition({winSize.width - 170.f, winSize.height - 42.f});
+        button->setPosition({winSize.width - 205.f, winSize.height - 42.f});
         this->addChild(menu, 1000, "gigachat-voidlight-editor-menu");
 
         log::info("Voidlight: editor button added.");
