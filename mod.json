@@ -6,10 +6,18 @@
   },
   "id": "gigachat.giga-chat-mod",
   "name": "GIGA-CHAT-MOD",
-  "version": "v1.2.1",
+  "version": "v1.3.0",
   "developer": "GigaChat",
-  "description": "Voidlight v1.2.1: offline Decor AI panel, Glow Lab, Color Lab, Style Book, Object Helper, Level Planner, Music Matcher, Screenshot Analyzer, Performance Helper, My Projects and experimental Auto Decor.",
+  "description": "Voidlight v1.3.0: round editor launcher and in-panel AI chat client with secure server proxy configuration.",
   "dependencies": {
     "geode.node-ids": ">=v1.23.3"
+  },
+  "settings": {
+    "server-url": {
+      "name": "Voidlight AI server URL",
+      "description": "Paste the deployed Worker URL (without /chat). Leave empty until the server is deployed.",
+      "type": "string",
+      "default": ""
+    }
   }
 }
