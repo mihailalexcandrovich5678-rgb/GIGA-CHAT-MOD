@@ -5,13 +5,28 @@
 using namespace geode::prelude;
 
 namespace {
-    // First UI milestone: a branded entry point for the future Voidlight tools.
-    void showVoidlightMenu() {
-        FLAlertLayer::create(
-            "VOIDLIGHT",
-            voidlight::DECOR_AI_GUIDE,
-            "CLOSE"
-        )->show();
+    void showTool(const char* title, const char* body) {
+        FLAlertLayer::create(title, body, "CLOSE")->show();
+    }
+
+    void showDecorAI() {
+        showTool("DECOR AI", voidlight::DECOR_AI_GUIDE);
+    }
+
+    void showStyleBook() {
+        showTool("VOIDLIGHT — STYLE BOOK", voidlight::STYLE_BOOK);
+    }
+
+    void showGlowLab() {
+        showTool("GLOW LAB", voidlight::GLOW_GUIDE);
+    }
+
+    void showColorLab() {
+        showTool("COLOR LAB", voidlight::COLOR_GUIDE);
+    }
+
+    void showAutoDecor() {
+        showTool("AUTO DECOR — EXPERIMENTAL", voidlight::AUTO_DECOR_GUIDE);
     }
 }
 
@@ -27,34 +42,48 @@ class $modify(VoidlightMenuLayer, MenuLayer) {
             return true;
         }
 
-        // Use a clear text label instead of a standard GD icon so the
-        // Voidlight entry is easy to distinguish from built-in menu buttons.
-        auto label = CCLabelBMFont::create("VOIDLIGHT", "bigFont.fnt");
-        if (!label) {
-            log::warn("Voidlight: could not create the menu button label.");
-            return true;
+        struct ToolButton {
+            const char* label;
+            SEL_MenuHandler callback;
+        };
+
+        ToolButton tools[] = {
+            {"VOIDLIGHT", menu_selector(VoidlightMenuLayer::onDecorAI)},
+            {"STYLES", menu_selector(VoidlightMenuLayer::onStyleBook)},
+            {"GLOW", menu_selector(VoidlightMenuLayer::onGlowLab)},
+            {"COLORS", menu_selector(VoidlightMenuLayer::onColorLab)},
+            {"AUTO", menu_selector(VoidlightMenuLayer::onAutoDecor)}
+        };
+
+        for (auto const& tool : tools) {
+            auto label = CCLabelBMFont::create(tool.label, "bigFont.fnt");
+            if (!label) {
+                log::warn("Voidlight: failed to create a tool label.");
+                continue;
+            }
+            label->setScale(0.32f);
+
+            auto button = CCMenuItemSpriteExtra::create(
+                label,
+                this,
+                tool.callback
+            );
+            if (!button) {
+                log::warn("Voidlight: failed to create a tool button.");
+                continue;
+            }
+
+            button->setID(("voidlight-" + std::string(tool.label)) .c_str());
+            menu->addChild(button);
         }
-        label->setScale(0.45f);
 
-        auto button = CCMenuItemSpriteExtra::create(
-            label,
-            this,
-            menu_selector(VoidlightMenuLayer::onVoidlightButton)
-        );
-
-        if (!button) {
-            log::warn("Voidlight: could not create the menu button.");
-            return true;
-        }
-
-        button->setID("voidlight-open"_spr);
-        menu->addChild(button);
         menu->updateLayout();
-
         return true;
     }
 
-    void onVoidlightButton(CCObject*) {
-        showVoidlightMenu();
-    }
+    void onDecorAI(CCObject*) { showDecorAI(); }
+    void onStyleBook(CCObject*) { showStyleBook(); }
+    void onGlowLab(CCObject*) { showGlowLab(); }
+    void onColorLab(CCObject*) { showColorLab(); }
+    void onAutoDecor(CCObject*) { showAutoDecor(); }
 };
