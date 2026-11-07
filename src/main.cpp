@@ -5,113 +5,144 @@
 using namespace geode::prelude;
 
 namespace {
-    void showVoidlightPanel() {
-        FLAlertLayer::create(
-            "VOIDLIGHT — DECOR AI",
-            "Hello from My Custom Mod 27\n\n"
-            "DECOR AI — OFFLINE ASSISTANT\n"
-            "A practical Geometry Dash decoration guide. Live GPT is not connected yet.\n\n"
-            "GLOW LAB\n"
-            "Build solid blocks first, add a bright edge, then place soft glow behind the shape. "
-            "Lower opacity until gameplay stays readable.\n\n"
-            "COLOR LAB\n"
-            "PURPLE VOID: deep purple + lavender + pale violet. "
-            "ICE: dark blue + cyan + white. "
-            "EMBER: dark brown + orange + warm yellow. "
-            "Use one main color, one support color and one highlight.\n\n"
-            "STYLE BOOK\n"
-            "GLOW — bright edges and soft light. NEON — dark base and clean bright geometry. "
-            "MODERN — panels and even spacing. CYBERPUNK — layered panels and neon accents. "
-            "FANTASY — arches and crystals. ATMOSPHERIC — silhouettes and subtle particles. "
-            "MINIMAL — one clear structure. HARD DECOR — large forms, details, micro-details.\n\n"
-            "OBJECT HELPER\n"
-            "Use blocks for the main silhouette, slopes for angled forms, outlines for frames, "
-            "glow objects for light and small details only where they improve the shape. "
-            "Keep hazards and the player path easy to see.\n\n"
-            "LEVEL PLANNER\n"
-            "INTRO: introduce the world. MAIN: establish the theme. DROP: strongest visual moment. "
-            "VARIATION: change scenery or gameplay. FINALE: resolve the idea. "
-            "Mark beats and transitions before decorating.\n\n"
-            "MUSIC MATCHER\n"
-            "Dreamy: ambient and flowing visuals. Dark: deep bass and silhouettes. "
-            "Energetic: clear beats and sharp transitions. Epic: build toward a climax. "
-            "Cyberpunk: synth/electro and neon accents. Check track length and availability.\n\n"
-            "SCREENSHOT ANALYZER\n"
-            "Use a screenshot as a reference: check contrast, clutter, empty space, "
-            "gameplay readability and consistency. This build does not automatically inspect images.\n\n"
-            "PERFORMANCE HELPER\n"
-            "Avoid unnecessary layers and effects, reuse a consistent palette, "
-            "and test dense sections for visibility and performance.\n\n"
-            "MY PROJECTS\n"
-            "Keep a note of each level's concept, palette, song, section plan and unfinished tasks.\n\n"
-            "AUTO DECOR — EXPERIMENTAL\n"
-            "Prototype plan: main block silhouette, thin frame, soft background glow, "
-            "a few corner details and clear gameplay space. It does not place objects automatically yet.",
-            "CLOSE"
-        )->show();
+    void drawRoundedRect(CCDrawNode* draw, float x, float y, float w, float h, float r,
+                         ccColor4F fill, ccColor4F border) {
+        CCPoint pts[36];
+        int n = 0;
+        const float centers[4][2] = {
+            {x + w - r, y + r}, {x + w - r, y + h - r},
+            {x + r, y + h - r}, {x + r, y + r}
+        };
+        const float starts[4] = {-90.f, 0.f, 90.f, 180.f};
+        for (int c = 0; c < 4; ++c) {
+            for (int i = 0; i <= 8; ++i) {
+                float a = (starts[c] + i * 90.f / 8.f) * 0.0174532925f;
+                pts[n++] = {centers[c][0] + r * cosf(a), centers[c][1] + r * sinf(a)};
+            }
+        }
+        draw->drawPolygon(pts, n, fill, 2.f, border);
+    }
+
+    const char* toolText(const char* id) {
+        if (!strcmp(id, "glow")) return "Build the main shape first. Add a bright edge, then soft light behind it. Keep the gameplay path clear.";
+        if (!strcmp(id, "color")) return "PURPLE VOID: deep purple + lavender + pale violet. ICE: navy + cyan + white. Use one main color and one highlight.";
+        if (!strcmp(id, "styles")) return "GLOW: soft light. MODERN: clean panels. CYBERPUNK: layered details. FANTASY: arches and crystals. MINIMAL: one clear shape.";
+        if (!strcmp(id, "objects")) return "Blocks form the silhouette. Slopes create angles. Outlines frame shapes. Glow objects add light. Keep hazards readable.";
+        if (!strcmp(id, "planner")) return "INTRO: introduce the world. MAIN: establish the theme. DROP: strongest moment. VARIATION: change it up. FINALE: resolve the idea.";
+        return "Dreamy: flowing visuals. Dark: silhouettes. Energetic: sharp beat changes. Epic: build to a climax. Match transitions to the music.";
     }
 }
 
 class $modify(VoidlightEditorUI, EditorUI) {
+    CCNode* m_voidlightPanel = nullptr;
+
     bool init(LevelEditorLayer* editorLayer) {
-        if (!EditorUI::init(editorLayer)) {
-            return false;
-        }
+        if (!EditorUI::init(editorLayer)) return false;
 
-        auto winSize = CCDirector::sharedDirector()->getWinSize();
-
+        auto win = CCDirector::sharedDirector()->getWinSize();
         auto emblem = CCNode::create();
-        if (!emblem) {
-            log::warn("Voidlight: failed to create emblem node.");
-            return true;
-        }
-        emblem->setContentSize({64.f, 64.f});
-        emblem->setAnchorPoint({0.5f, 0.5f});
-
-        auto glow = CCDrawNode::create();
-        if (!glow) return true;
-        glow->drawDot({32.f, 32.f}, 31.f, {0.62f, 0.12f, 1.f, 0.24f});
-        glow->drawDot({32.f, 32.f}, 27.f, {0.75f, 0.25f, 1.f, 0.8f});
-        glow->drawDot({32.f, 32.f}, 23.f, {0.20f, 0.04f, 0.42f, 1.f});
-        glow->drawDot({32.f, 32.f}, 19.f, {0.34f, 0.08f, 0.62f, 1.f});
-        emblem->addChild(glow, 0);
-
-        auto star = CCDrawNode::create();
-        if (!star) return true;
-        CCPoint starPoints[] = {
-            {32.f, 51.f}, {36.5f, 37.f}, {51.f, 37.f}, {39.5f, 28.f},
-            {44.f, 14.f}, {32.f, 22.5f}, {20.f, 14.f}, {24.5f, 28.f},
-            {13.f, 37.f}, {27.5f, 37.f}
-        };
-        star->drawPolygon(
-            starPoints, 10,
-            {0.92f, 0.82f, 1.f, 1.f},
-            1.5f,
-            {0.72f, 0.35f, 1.f, 1.f}
-        );
-        emblem->addChild(star, 1);
-
-        auto button = CCMenuItemSpriteExtra::create(
-            emblem, this, menu_selector(VoidlightEditorUI::onVoidlight)
-        );
-        if (!button) {
-            log::warn("Voidlight: failed to create editor button.");
-            return true;
-        }
+        emblem->setContentSize({48.f, 48.f});
+        auto art = CCDrawNode::create();
+        art->drawDot({24.f, 24.f}, 23.f, {0.24f, 0.08f, 0.43f, 1.f});
+        art->drawDot({24.f, 24.f}, 20.f, {0.43f, 0.22f, 0.68f, 1.f});
+        CCPoint starPts[] = {{24,40},{28,28},{40,24},{28,20},{24,8},{20,20},{8,24},{20,28}};
+        art->drawPolygon(starPts, 8, {0.96f,0.91f,1.f,1.f}, 1.2f, {0.72f,0.58f,0.91f,1.f});
+        emblem->addChild(art);
+        auto button = CCMenuItemSpriteExtra::create(emblem, this, menu_selector(VoidlightEditorUI::onVoidlight));
+        if (!button) return true;
         button->setID("gigachat-voidlight-editor-button");
-
         auto menu = CCMenu::create();
-        if (!menu) return true;
         menu->setPosition(CCPointZero);
         menu->addChild(button);
-        button->setPosition({winSize.width - 205.f, winSize.height - 42.f});
+        button->setPosition({win.width - 205.f, win.height - 42.f});
         this->addChild(menu, 1000);
-
-        log::info("Voidlight: purple neon star button initialized.");
         return true;
     }
 
+    void closeVoidlight(CCObject*) {
+        if (m_voidlightPanel) {
+            m_voidlightPanel->removeFromParentAndCleanup(true);
+            m_voidlightPanel = nullptr;
+        }
+    }
+
+    void showTool(CCObject* sender) {
+        auto item = typeinfo_cast<CCMenuItem*>(sender);
+        if (!item) return;
+        auto id = item->getTag();
+        const char* key = id == 1 ? "glow" : id == 2 ? "color" : id == 3 ? "styles" :
+                          id == 4 ? "objects" : id == 5 ? "planner" : "music";
+        FLAlertLayer::create("VOIDLIGHT", toolText(key), "OK")->show();
+    }
+
     void onVoidlight(CCObject*) {
-        showVoidlightPanel();
+        if (m_voidlightPanel) {
+            closeVoidlight(nullptr);
+            return;
+        }
+        auto win = CCDirector::sharedDirector()->getWinSize();
+        const float w = 330.f, h = 252.f;
+        auto panel = CCNode::create();
+        panel->setContentSize({w, h});
+        panel->setAnchorPoint({0.f, 0.f});
+        auto bg = CCDrawNode::create();
+        drawRoundedRect(bg, 0, 0, w, h, 18.f,
+                       {0.055f, 0.025f, 0.12f, 0.97f},
+                       {0.68f, 0.43f, 0.94f, 1.f});
+        drawRoundedRect(bg, 5, 5, w - 10, h - 10, 14.f,
+                       {0.10f, 0.055f, 0.19f, 0.35f},
+                       {0.35f, 0.20f, 0.52f, 0.8f});
+        panel->addChild(bg);
+
+        auto title = CCLabelBMFont::create("VOIDLIGHT", "bigFont.fnt");
+        title->setScale(0.48f);
+        title->setAnchorPoint({0.f, 0.5f});
+        title->setPosition({22.f, h - 27.f});
+        panel->addChild(title, 2);
+        auto subtitle = CCLabelBMFont::create("DECOR AI  -  EDITOR ASSISTANT", "goldFont.fnt");
+        subtitle->setScale(0.28f);
+        subtitle->setAnchorPoint({0.f, 0.5f});
+        subtitle->setPosition({22.f, h - 49.f});
+        panel->addChild(subtitle, 2);
+
+        auto closeLabel = CCLabelBMFont::create("X", "bigFont.fnt");
+        closeLabel->setScale(0.42f);
+        auto close = CCMenuItemSpriteExtra::create(closeLabel, this, menu_selector(VoidlightEditorUI::closeVoidlight));
+        close->setPosition({w - 22.f, h - 25.f});
+        auto actions = CCMenu::create();
+        actions->setPosition(CCPointZero);
+        actions->addChild(close);
+
+        const char* names[] = {"Glow Lab", "Color Lab", "Style Book", "Object Helper", "Level Planner", "Music Matcher"};
+        for (int i = 0; i < 6; ++i) {
+            float x = (i % 2 == 0) ? 91.f : 244.f;
+            float y = h - 91.f - (i / 2) * 48.f;
+            auto shape = CCNode::create();
+            shape->setContentSize({143.f, 38.f});
+            auto buttonBg = CCDrawNode::create();
+            drawRoundedRect(buttonBg, 0, 0, 143.f, 38.f, 10.f,
+                            {0.25f, 0.16f, 0.39f, 1.f},
+                            {0.48f, 0.34f, 0.67f, 1.f});
+            shape->addChild(buttonBg);
+            auto label = CCLabelBMFont::create(names[i], "bigFont.fnt");
+            label->setScale(0.31f);
+            label->setPosition({71.5f, 19.f});
+            shape->addChild(label);
+            auto item = CCMenuItemSpriteExtra::create(shape, this, menu_selector(VoidlightEditorUI::showTool));
+            item->setTag(i + 1);
+            item->setPosition({x, y});
+            actions->addChild(item);
+        }
+        panel->addChild(actions, 3);
+
+        auto hint = CCLabelBMFont::create("Choose a tool...", "chatFont.fnt");
+        hint->setScale(0.48f);
+        hint->setAnchorPoint({0.f, 0.5f});
+        hint->setPosition({22.f, 18.f});
+        panel->addChild(hint, 2);
+
+        panel->setPosition({win.width - w - 16.f, win.height - h - 58.f});
+        this->addChild(panel, 1100);
+        m_voidlightPanel = panel;
     }
 };
