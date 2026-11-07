@@ -26,12 +26,13 @@ namespace {
     }
 
     const char* toolText(const char* id) {
-        if (!strcmp(id, "glow")) return "Build the main shape first. Add a bright edge, then soft light behind it. Keep the gameplay path clear.";
-        if (!strcmp(id, "color")) return "PURPLE VOID: deep purple + lavender + pale violet. ICE: navy + cyan + white. Use one main color and one highlight.";
-        if (!strcmp(id, "styles")) return "GLOW: soft light. MODERN: clean panels. CYBERPUNK: layered details. FANTASY: arches and crystals. MINIMAL: one clear shape.";
-        if (!strcmp(id, "objects")) return "Blocks form the silhouette. Slopes create angles. Outlines frame shapes. Glow objects add light. Keep hazards readable.";
-        if (!strcmp(id, "planner")) return "INTRO: introduce the world. MAIN: establish the theme. DROP: strongest moment. VARIATION: change it up. FINALE: resolve the idea.";
-        return "Dreamy: flowing visuals. Dark: silhouettes. Energetic: sharp beat changes. Epic: build to a climax. Match transitions to the music.";
+        if (!strcmp(id, "glow")) return voidlight::GLOW_GUIDE;
+        if (!strcmp(id, "color")) return voidlight::COLOR_GUIDE;
+        if (!strcmp(id, "styles")) return voidlight::STYLE_BOOK;
+        if (!strcmp(id, "objects")) return voidlight::OBJECT_HELPER_GUIDE;
+        if (!strcmp(id, "planner")) return voidlight::LEVEL_PLANNER_GUIDE;
+        if (!strcmp(id, "music")) return voidlight::MUSIC_MATCHER_GUIDE;
+        return voidlight::DECOR_AI_GUIDE;
     }
 }
 
