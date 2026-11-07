@@ -38,6 +38,40 @@ inline constexpr char COLOR_GUIDE[] =
     "FOREST — deep green base, mint details, pale green highlights.\n\n"
     "Keep one main color, one supporting color and one highlight color. Check contrast against the background.";
 
+inline constexpr char LEVEL_PLANNER_GUIDE[] =
+    "<cy>LEVEL PLANNER</c>\n\n"
+    "Plan a complete level from its core idea to its final section.\n\n"
+    "<cg>1. CHOOSE A CONCEPT</c>\n"
+    "Examples: cosmic journey, purple dream, cyberpunk city, ancient temple, underwater ruins.\n\n"
+    "<cg>2. BUILD THE STRUCTURE</c>\n"
+    "Intro: introduce the world and teach the rhythm.\n"
+    "Main part: establish the visual theme and gameplay identity.\n"
+    "Drop: make the strongest visual and musical moment.\n"
+    "Variation: change the scenery or gameplay to keep interest.\n"
+    "Finale: resolve the theme and finish clearly.\n\n"
+    "<cg>3. PLAN THE DECORATION</c>\n"
+    "Choose a style, three-color palette, main structures, background layers and effects.\n"
+    "Give each section a variation while keeping one recognizable visual identity.\n\n"
+    "<cg>4. SYNC WITH MUSIC</c>\n"
+    "Mark the intro, beat changes, drops and transitions. Use strong visual changes at important musical moments.\n\n"
+    "This is an offline planning guide. It does not inspect or edit your level automatically.";
+
+inline constexpr char MUSIC_MATCHER_GUIDE[] =
+    "<cy>MUSIC MATCHER</c>\n\n"
+    "Match the track to the level's mood and gameplay.\n\n"
+    "CALM / DREAMY — ambient, soft electronic, gentle melodies; use flowing gameplay and gradual transitions.\n"
+    "DARK / MYSTERIOUS — atmospheric, deep bass, sparse percussion; use silhouettes and controlled light.\n"
+    "ENERGETIC — fast electronic, strong rhythm and clear drops; use sharper transitions and active gameplay.\n"
+    "EPIC / FANTASY — orchestral or melodic electronic; build toward a clear climax.\n"
+    "CYBERPUNK — synthwave, electro or bass-driven electronic; use neon accents and rhythmic structures.\n\n"
+    "<cg>TRACK CHECKLIST</c>\n"
+    "1. Does the mood fit the level concept?\n"
+    "2. Is the rhythm comfortable for the intended gameplay?\n"
+    "3. Are there clear moments for transitions and a drop?\n"
+    "4. Does the track length fit the planned level?\n"
+    "5. Mark important beats and section changes before decorating.\n\n"
+    "This guide suggests music characteristics, not a live song catalogue. Check track availability and permissions in the game.";
+
 inline constexpr char AUTO_DECOR_GUIDE[] =
     "<cy>AUTO DECOR — EXPERIMENTAL PROTOTYPE</c>\n\n"
     "This first prototype creates a decoration plan, not edits to your level.\n\n"
