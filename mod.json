@@ -6,9 +6,9 @@
 	},
 	"id": "gigachat.giga-chat-mod",
 	"name": "GIGA-CHAT-MOD",
-	"version": "v1.0.1",
+	"version": "v1.1.0",
 	"developer": "GigaChat",
-	"description": "Voidlight tools and decoration assistant for the Geometry Dash Editor.",
+	"description": "Voidlight in-game tools: Decor AI, style book, Glow Lab, Color Lab and experimental Auto Decor.",
 	"dependencies": {
 		"geode.node-ids": ">=v1.23.3"
 	}
