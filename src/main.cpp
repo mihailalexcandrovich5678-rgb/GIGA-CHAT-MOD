@@ -65,8 +65,8 @@ class $modify(VoidlightEditorUI, EditorUI) {
 
     void closeVoidlight(CCObject*) {
         if (m_fields->panel) {
-            m_voidlightPanel->removeFromParentAndCleanup(true);
-            m_voidlightPanel = nullptr;
+            m_fields->panel->removeFromParentAndCleanup(true);
+            m_fields->panel = nullptr;
         }
     }
 
@@ -80,7 +80,7 @@ class $modify(VoidlightEditorUI, EditorUI) {
     }
 
     void onVoidlight(CCObject*) {
-        if (m_voidlightPanel) {
+        if (m_fields->panel) {
             closeVoidlight(nullptr);
             return;
         }
@@ -147,6 +147,6 @@ class $modify(VoidlightEditorUI, EditorUI) {
 
         panel->setPosition({win.width - w - 16.f, win.height - h - 58.f});
         this->addChild(panel, 1100);
-        m_voidlightPanel = panel;
+        m_fields->panel = panel;
     }
 };
