@@ -1,4 +1,6 @@
 #include <Geode/Geode.hpp>
+#include <cmath>
+#include <cstring>
 #include <Geode/modify/EditorUI.hpp>
 #include "decor_ai.hpp"
 
@@ -17,7 +19,7 @@ namespace {
         for (int c = 0; c < 4; ++c) {
             for (int i = 0; i <= 8; ++i) {
                 float a = (starts[c] + i * 90.f / 8.f) * 0.0174532925f;
-                pts[n++] = {centers[c][0] + r * cosf(a), centers[c][1] + r * sinf(a)};
+                pts[n++] = CCPointMake(centers[c][0] + r * std::cos(a), centers[c][1] + r * std::sin(a));
             }
         }
         draw->drawPolygon(pts, n, fill, 2.f, border);
@@ -34,7 +36,9 @@ namespace {
 }
 
 class $modify(VoidlightEditorUI, EditorUI) {
-    CCNode* m_voidlightPanel = nullptr;
+    struct Fields {
+        CCNode* panel = nullptr;
+    };
 
     bool init(LevelEditorLayer* editorLayer) {
         if (!EditorUI::init(editorLayer)) return false;
@@ -60,7 +64,7 @@ class $modify(VoidlightEditorUI, EditorUI) {
     }
 
     void closeVoidlight(CCObject*) {
-        if (m_voidlightPanel) {
+        if (m_fields->panel) {
             m_voidlightPanel->removeFromParentAndCleanup(true);
             m_voidlightPanel = nullptr;
         }
