@@ -7,12 +7,46 @@ using namespace geode::prelude;
 namespace {
     void showVoidlightPanel() {
         FLAlertLayer::create(
-            "VOIDLIGHT",
-            "DECOR AI\\n\\n"
-            "Your Geometry Dash decoration assistant.\\n\\n"
-            "Available guide sections: Glow Lab, Color Lab, Style Book, "
-            "Level Planner, Music Matcher and experimental Auto Decor.\\n\\n"
-            "Choose a guide from the next update of the panel.",
+            "VOIDLIGHT — DECOR AI",
+            "Hello from My Custom Mod 27\n\n"
+            "DECOR AI — OFFLINE ASSISTANT\n"
+            "A practical Geometry Dash decoration guide. Live GPT is not connected yet.\n\n"
+            "GLOW LAB\n"
+            "Build solid blocks first, add a bright edge, then place soft glow behind the shape. "
+            "Lower opacity until gameplay stays readable.\n\n"
+            "COLOR LAB\n"
+            "PURPLE VOID: deep purple + lavender + pale violet. "
+            "ICE: dark blue + cyan + white. "
+            "EMBER: dark brown + orange + warm yellow. "
+            "Use one main color, one support color and one highlight.\n\n"
+            "STYLE BOOK\n"
+            "GLOW — bright edges and soft light. NEON — dark base and clean bright geometry. "
+            "MODERN — panels and even spacing. CYBERPUNK — layered panels and neon accents. "
+            "FANTASY — arches and crystals. ATMOSPHERIC — silhouettes and subtle particles. "
+            "MINIMAL — one clear structure. HARD DECOR — large forms, details, micro-details.\n\n"
+            "OBJECT HELPER\n"
+            "Use blocks for the main silhouette, slopes for angled forms, outlines for frames, "
+            "glow objects for light and small details only where they improve the shape. "
+            "Keep hazards and the player path easy to see.\n\n"
+            "LEVEL PLANNER\n"
+            "INTRO: introduce the world. MAIN: establish the theme. DROP: strongest visual moment. "
+            "VARIATION: change scenery or gameplay. FINALE: resolve the idea. "
+            "Mark beats and transitions before decorating.\n\n"
+            "MUSIC MATCHER\n"
+            "Dreamy: ambient and flowing visuals. Dark: deep bass and silhouettes. "
+            "Energetic: clear beats and sharp transitions. Epic: build toward a climax. "
+            "Cyberpunk: synth/electro and neon accents. Check track length and availability.\n\n"
+            "SCREENSHOT ANALYZER\n"
+            "Use a screenshot as a reference: check contrast, clutter, empty space, "
+            "gameplay readability and consistency. This build does not automatically inspect images.\n\n"
+            "PERFORMANCE HELPER\n"
+            "Avoid unnecessary layers and effects, reuse a consistent palette, "
+            "and test dense sections for visibility and performance.\n\n"
+            "MY PROJECTS\n"
+            "Keep a note of each level's concept, palette, song, section plan and unfinished tasks.\n\n"
+            "AUTO DECOR — EXPERIMENTAL\n"
+            "Prototype plan: main block silhouette, thin frame, soft background glow, "
+            "a few corner details and clear gameplay space. It does not place objects automatically yet.",
             "CLOSE"
         )->show();
     }
@@ -26,8 +60,6 @@ class $modify(VoidlightEditorUI, EditorUI) {
 
         auto winSize = CCDirector::sharedDirector()->getWinSize();
 
-        // Custom Voidlight emblem: violet circular core, neon rings and a
-        // centered five-point star. It deliberately does not reuse GD gears.
         auto emblem = CCNode::create();
         if (!emblem) {
             log::warn("Voidlight: failed to create emblem node.");
@@ -60,9 +92,7 @@ class $modify(VoidlightEditorUI, EditorUI) {
         emblem->addChild(star, 1);
 
         auto button = CCMenuItemSpriteExtra::create(
-            emblem,
-            this,
-            menu_selector(VoidlightEditorUI::onVoidlight)
+            emblem, this, menu_selector(VoidlightEditorUI::onVoidlight)
         );
         if (!button) {
             log::warn("Voidlight: failed to create editor button.");
@@ -77,7 +107,7 @@ class $modify(VoidlightEditorUI, EditorUI) {
         button->setPosition({winSize.width - 205.f, winSize.height - 42.f});
         this->addChild(menu, 1000);
 
-        log::info("Voidlight: custom purple neon star button added.");
+        log::info("Voidlight: purple neon star button initialized.");
         return true;
     }
 
