@@ -9,7 +9,6 @@ namespace {
     void showVoidlightMenu() {
         FLAlertLayer::create(
             "VOIDLIGHT",
-            "<cg>GigaChat Mod Voidlight</c>\n"
             voidlight::DECOR_AI_GUIDE,
             "CLOSE"
         )->show();
