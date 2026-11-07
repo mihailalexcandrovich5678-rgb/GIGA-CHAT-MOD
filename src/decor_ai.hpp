@@ -38,6 +38,14 @@ inline constexpr char COLOR_GUIDE[] =
     "FOREST — deep green base, mint details, pale green highlights.\n\n"
     "Keep one main color, one supporting color and one highlight color. Check contrast against the background.";
 
+inline constexpr char OBJECT_HELPER_GUIDE[] =
+    "<cy>OBJECT HELPER</c>\\n\\n"
+    "Blocks build the main silhouette. Slopes add direction and angled transitions.\\n"
+    "Use outlines to separate layers and small details to guide the eye.\\n"
+    "Keep spikes, saws, portals and the playable route easy to recognize.\\n"
+    "Build large forms first, then medium details, then small accents.\\n\\n"
+    "This guide explains object roles; it does not place objects automatically.";
+
 inline constexpr char LEVEL_PLANNER_GUIDE[] =
     "<cy>LEVEL PLANNER</c>\n\n"
     "Plan a complete level from its core idea to its final section.\n\n"
