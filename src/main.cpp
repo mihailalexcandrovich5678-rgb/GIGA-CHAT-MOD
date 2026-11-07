@@ -27,14 +27,17 @@ class $modify(VoidlightMenuLayer, MenuLayer) {
             return true;
         }
 
-        auto sprite = CCSprite::createWithSpriteFrameName("GJ_likeBtn_001.png");
-        if (!sprite) {
-            log::warn("Voidlight: could not create the menu button sprite.");
+        // Use a clear text label instead of a standard GD icon so the
+        // Voidlight entry is easy to distinguish from built-in menu buttons.
+        auto label = CCLabelBMFont::create("VOIDLIGHT", "bigFont.fnt");
+        if (!label) {
+            log::warn("Voidlight: could not create the menu button label.");
             return true;
         }
+        label->setScale(0.45f);
 
         auto button = CCMenuItemSpriteExtra::create(
-            sprite,
+            label,
             this,
             menu_selector(VoidlightMenuLayer::onVoidlightButton)
         );
