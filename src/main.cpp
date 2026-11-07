@@ -75,7 +75,7 @@ class $modify(VoidlightEditorUI, EditorUI) {
         menu->setPosition(CCPointZero);
         menu->addChild(button);
         button->setPosition({winSize.width - 205.f, winSize.height - 42.f});
-        this->addChild(menu, 1000, "gigachat-voidlight-editor-menu");
+        this->addChild(menu, 1000);
 
         log::info("Voidlight: custom purple neon star button added.");
         return true;
