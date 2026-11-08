@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: geode-bridge
+    runtime: docker
+    dockerfilePath: ./bridge/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: BRIDGE_ASSISTANT_TOKEN
+        generateValue: true
+      - key: BRIDGE_DB_PATH
+        value: /var/data/bridge.sqlite
+    disk:
+      name: geode-bridge-data
+      mountPath: /var/data
+      sizeGB: 1
