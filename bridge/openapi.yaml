@@ -48,6 +48,70 @@ paths:
           description: Invalid or expired code
         "429":
           description: Pairing rate limit reached
+  /v1/assistant/devices:
+    get:
+      operationId: listPairedDevices
+      summary: List active paired devices
+      security:
+        - assistantBearer: []
+      responses:
+        "200":
+          description: Active device IDs and last-seen timestamps
+        "401":
+          description: Invalid assistant bearer token
+  /v1/assistant/commands/{command_id}:
+    get:
+      operationId: getCommandResult
+      summary: Read command status and result
+      security:
+        - assistantBearer: []
+      parameters:
+        - name: command_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-f0-9]{24}    post:
+      operationId: enqueueGameCommand
+      summary: Queue a supported command for a paired Geometry Dash device
+      security:
+        - assistantBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [device_id, kind]
+              properties:
+                device_id:
+                  type: string
+                kind:
+                  type: string
+                  enum: [bridge.ping, editor.get_status]
+      responses:
+        "202":
+          description: Command queued
+        "401":
+          description: Invalid assistant bearer token
+        "400":
+          description: Command is not enabled
+components:
+  securitySchemes:
+    assistantBearer:
+      type: http
+      scheme: bearer
+    pairingAdmin:
+      type: http
+      scheme: bearer
+
+      responses:
+        "200":
+          description: Command state and optional JSON result
+        "401":
+          description: Invalid assistant bearer token
+        "404":
+          description: Command not found
   /v1/assistant/commands:
     post:
       operationId: enqueueGameCommand
