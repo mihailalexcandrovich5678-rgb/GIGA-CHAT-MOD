@@ -10,10 +10,12 @@ and attach persistent storage to the database path.
 - `POST /v1/pair/claim` — rate-limited exchange for a device token (shown once).
 - `GET /v1/device/status` — device-authenticated status.
 - `GET /v1/device/commands` — device-authenticated command polling.
-- `POST /v1/device/commands/:id/ack` — acknowledge a delivered command.
+- `POST /v1/device/commands/:id/ack` — acknowledge a delivered command and optionally return a small JSON result (maximum 8 KiB).
 - `POST /v1/device/revoke` — revoke the calling device token.
+- `GET /v1/assistant/devices` — list active paired device IDs and last-seen timestamps.
 - `POST /v1/assistant/commands` — assistant-side enqueue, protected by
   `BRIDGE_ASSISTANT_TOKEN`.
+- `GET /v1/assistant/commands/:id` — read command status and its optional JSON result.
 
 ## Required server secrets
 
@@ -32,7 +34,9 @@ can revoke its own token with `POST /v1/device/revoke`.
 
 Only `bridge.ping` and `editor.get_status` are accepted. No level-editing command is
 enabled. The current Geode mod does not yet implement protocol polling or secure token
-storage. This relay does not automatically connect an ordinary ChatGPT conversation:
+storage. The relay now supports assistant-side device discovery and result retrieval; device
+acknowledgements can include a bounded JSON result. Existing SQLite databases are upgraded
+with a `result` column on startup. This relay does not automatically connect an ordinary ChatGPT conversation:
 a separately configured, authorized ChatGPT Action/connector or client is required.
 Never put either server secret in the mod, a public repository, or a client-side app.
 
