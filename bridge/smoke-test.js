@@ -51,7 +51,7 @@ try {
     method: "POST", headers: { "content-type": "application/json" },
     body: JSON.stringify({ code: started.body.pairing_code })
   });
-  assert.equal(claimed.status, 201);
+  assert.equal(claimed.status, 201, `pair claim failed: ${JSON.stringify(claimed.body)}`);
   const deviceToken = claimed.body.device_token;
   const deviceAuth = auth(deviceToken);
   assert.equal((await request("/v1/device/status", { headers: deviceAuth })).status, 200);
