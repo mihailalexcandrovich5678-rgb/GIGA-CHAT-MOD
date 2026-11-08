@@ -108,13 +108,23 @@ function route(req, res) {
       if (!row || row.expires_at < Date.now()) return json(res, 401, { error: "pairing_code_invalid_or_expired" });
       const deviceId = randomBytes(12).toString("hex");
       const token = randomBytes(32).toString("base64url");
-      const tx = db.transaction(() => {
-        const changed = db.prepare("UPDATE pair_codes SET used=1 WHERE code_hash=? AND used=0 AND expires_at>=?").run(hash(code), Date.now());
-        if (changed.changes !== 1) return false;
-        db.prepare("INSERT INTO devices(id,token_hash,created_at) VALUES(?,?,?)").run(deviceId, hash(token), Date.now());
-        return true;
-      });
-      if (!tx()) return json(res, 409, { error: "pairing_code_already_used" });
+      // DatabaseSync has no transaction() helper; use an explicit SQLite transaction.
+      let claimed = false;
+      db.exec("BEGIN IMMEDIATE");
+      try {
+        const changed = db.prepare("UPDATE pair_codes SET used=1 WHERE code_hash=? AND used=0 AND expires_at>=?")
+          .run(hash(code), Date.now());
+        if (changed.changes === 1) {
+          db.prepare("INSERT INTO devices(id,token_hash,created_at) VALUES(?,?,?)")
+            .run(deviceId, hash(token), Date.now());
+          claimed = true;
+        }
+        db.exec("COMMIT");
+      } catch (error) {
+        db.exec("ROLLBACK");
+        throw error;
+      }
+      if (!claimed) return json(res, 409, { error: "pairing_code_already_used" });
       return json(res, 201, { device_id: deviceId, device_token: token, warning: "Store this token securely; it is shown only once." });
     }).catch(() => json(res, 400, { error: "invalid_json" }));
   }
