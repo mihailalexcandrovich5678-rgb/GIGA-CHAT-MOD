@@ -146,7 +146,7 @@ namespace {
                             else if (kind == "editor.get_status") {
                                 auto result = matjson::Value::object();
                                 result["game"] = "running";
-                                result["editor"] = "not_detected";
+                                result["editor"] = "unknown";
                                 result["note"] = "Editor state inspection is not implemented yet; no level data was accessed.";
                                 co_await sendAck(base, token, id, "completed", std::move(result));
                             }
