@@ -8,6 +8,8 @@ services:
     envVars:
       - key: BRIDGE_ASSISTANT_TOKEN
         generateValue: true
+      - key: BRIDGE_PAIRING_TOKEN
+        generateValue: true
       - key: BRIDGE_DB_PATH
         value: /var/data/bridge.sqlite
     disk:
