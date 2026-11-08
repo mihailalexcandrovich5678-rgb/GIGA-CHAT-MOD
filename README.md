@@ -1,23 +1,22 @@
-# GIGA-CHAT-MOD
-This is where she makes a mod.
+# Geode Bridge
 
-<img src="logo.png" width="150" alt="the mod's logo" />
+A small, privacy-first companion mod for Geometry Dash 2.2 and Geode.
 
-*Update logo.png to change your mod's icon (please)*
+## First milestone
 
-## Getting started
-We recommend heading over to [the getting started section on our docs](https://docs.geode-sdk.org/getting-started/) for useful info on what to do next.
+The initial Android64 build is a UI prototype. The intended read-only workflow is:
 
-## Build instructions
-For more info, see [our docs](https://docs.geode-sdk.org/getting-started/create-mod#build)
-```sh
-# Assuming you have the Geode CLI set up already
-geode build
-```
+1. Read basic information about the currently open editor level.
+2. Create a local diagnostic report that the player chooses to share in chat.
+3. Let an assistant inspect the report and explain the level structure or Geode errors.
 
-# Resources
-* [Geode SDK Documentation](https://docs.geode-sdk.org/)
-* [Geode SDK Source Code](https://github.com/geode-sdk/geode/)
-* [Geode CLI](https://github.com/geode-sdk/cli)
-* [Bindings](https://github.com/geode-sdk/bindings/)
-* [Dev Tools](https://github.com/geode-sdk/DevTools)
+## Privacy and safety
+
+- No automatic uploads.
+- No account passwords, tokens, or private credentials are collected.
+- The first version is read-only: it must not modify or delete level objects.
+- Any future network connection must be opt-in and clearly show what data is sent.
+
+## Build
+
+This repository uses the Geode SDK and the GitHub Actions workflow in `.github/workflows/multi-platform.yml`.
