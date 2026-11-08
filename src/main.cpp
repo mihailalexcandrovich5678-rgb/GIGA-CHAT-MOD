@@ -54,17 +54,64 @@ class $modify(VoidlightEditorUI, EditorUI) {
         }
     }
 
-    void setStyle(std::string const& style, CCObject*) {
-        m_fields->style=style;
-        if(m_fields->selectedStyle) m_fields->selectedStyle->setString(("STYLE: "+style).c_str());
-        if(m_fields->previewText) {
-            std::string description;
-            if(style=="PURPLE GLOW") description="Dark blocks, lavender frames and soft violet light.";
-            else if(style=="MINIMAL") description="Simple silhouettes, clean spacing and a few accents.";
-            else if(style=="MODERN") description="Layered panels, tidy frames and restrained colors.";
-            else description="Dark structures, cyan highlights and sharp geometric details.";
-            m_fields->previewText->setString(description.c_str());
+    void buildDecor() {
+        if (!m_editorLayer) return;
+
+        // Build a compact, non-destructive motif just beyond the current level end.
+        // createObject(..., false) keeps the additions in the editor undo history.
+        static const char* purple[] = {
+            "...###...", "..#...#..", ".#.....#.", "#.......#",
+            "#...#...#", "#.......#", ".#.....#.", "..#...#..", "...###..."
+        };
+        static const char* minimal[] = {
+            "....#....", "...###...", "..#.#.#..", ".#..#..#.",
+            "....#....", "....#....", "....#...."
+        };
+        static const char* modern[] = {
+            "########.", "#......#.", "#.####.#.", "#.#..#.#.",
+            "#.####.#.", "#......#.", "########."
+        };
+        static const char* cyber[] = {
+            "#.......#", ".#.....#..", "..#...#...", "...###....",
+            "...###....", "..#...#...", ".#.....#..", "#.......#"
+        };
+
+        const char** pattern = purple;
+        int rows = 9;
+        ccColor3B mainColor(150, 95, 235);
+        ccColor3B glowColor(195, 135, 255);
+        if (m_fields->style == "MINIMAL") {
+            pattern = minimal; rows = 7;
+            mainColor = ccColor3B(185, 185, 205);
+            glowColor = ccColor3B(210, 210, 225);
+        } else if (m_fields->style == "MODERN") {
+            pattern = modern; rows = 7;
+            mainColor = ccColor3B(90, 165, 220);
+            glowColor = ccColor3B(135, 205, 255);
+        } else if (m_fields->style == "CYBER") {
+            pattern = cyber; rows = 8;
+            mainColor = ccColor3B(55, 220, 205);
+            glowColor = ccColor3B(100, 255, 235);
         }
+
+        float startX = m_editorLayer->getLastObjectX() + 90.f;
+        for (int row = 0; row < rows; ++row) {
+            for (int col = 0; pattern[row][col] != '\\0'; ++col) {
+                if (pattern[row][col] != '#') continue;
+                auto object = m_editorLayer->createObject(
+                    1, CCPointMake(startX + col * 30.f, 90.f + (rows - row - 1) * 30.f), false
+                );
+                if (!object) continue;
+                object->setObjectColor(mainColor);
+                object->setGlowColor(glowColor);
+            }
+        }
+    }
+
+    void setStyle(std::string const& style, CCObject*) {
+        m_fields->style = style;
+        buildDecor();
+        closePanel(nullptr);
     }
 
     void onPurple(CCObject* sender) { setStyle("PURPLE GLOW",sender); }
@@ -120,7 +167,7 @@ class $modify(VoidlightEditorUI, EditorUI) {
         description->setAnchorPoint({0,1}); description->setPosition({18,h-137});
         description->setWidth(320.f); description->setScale(0.58f);
         panel->addChild(description,3); m_fields->previewText=description;
-        auto note=CCLabelBMFont::create("PREVIEW ONLY — YOUR LEVEL IS UNCHANGED","chatFont.fnt");
+        auto note=CCLabelBMFont::create("SELECT A STYLE TO BUILD DECOR","chatFont.fnt");
         note->setScale(0.40f); note->setAnchorPoint({0,0.5f}); note->setPosition({18,25});
         panel->addChild(note,3);
         panel->setScale(scale); panel->setPosition({win.width-w*scale-18.f,win.height-h*scale-58.f});
