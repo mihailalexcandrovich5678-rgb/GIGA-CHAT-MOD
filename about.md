@@ -1,3 +1,3 @@
-# GIGA-CHAT-MOD
+# Geode Bridge
 
-Edit about.md to change this
+A privacy-first helper that prepares read-only Geometry Dash level diagnostics for sharing with an assistant.
