@@ -1,9 +1,6 @@
 #include <Geode/Geode.hpp>
-#include <Geode/ui/TextInput.hpp>
-#include <Geode/utils/web.hpp>
 #include <cmath>
 #include <Geode/modify/EditorUI.hpp>
-#include "decor_ai.hpp"
 
 using namespace geode::prelude;
 
@@ -24,10 +21,9 @@ namespace {
 class $modify(VoidlightEditorUI, EditorUI) {
     struct Fields {
         CCNode* panel = nullptr;
-        geode::TextInput* input = nullptr;
-        CCLabelBMFont* conversation = nullptr;
-        async::TaskHolder<web::WebResponse> request;
-        bool waiting = false;
+        CCLabelBMFont* selectedStyle = nullptr;
+        CCLabelBMFont* previewText = nullptr;
+        std::string style = "PURPLE GLOW";
     };
 
     bool init(LevelEditorLayer* editorLayer) {
@@ -40,66 +36,53 @@ class $modify(VoidlightEditorUI, EditorUI) {
         CCPoint star[]={{24,40},{28,28},{40,24},{28,20},{24,8},{20,20},{8,24},{20,28}};
         art->drawPolygon(star,8,{0.96f,0.91f,1.f,1.f},1.2f,{0.72f,0.58f,0.91f,1.f});
         emblem->addChild(art);
-        auto button=CCMenuItemSpriteExtra::create(emblem,this,menu_selector(VoidlightEditorUI::onVoidlight));
+        auto button=CCMenuItemSpriteExtra::create(emblem,this,menu_selector(VoidlightEditorUI::onAutoDecor));
         if(!button) return true;
-        button->setID("gigachat-voidlight-editor-button");
+        button->setID("gigachat-voidlight-auto-decor-button");
         auto menu=CCMenu::create(); menu->setPosition(CCPointZero); menu->addChild(button);
-        // Keep the round launcher beside the upper-right editor controls.
         button->setPosition({win.width-86.f,win.height-42.f});
         this->addChild(menu,1000);
         return true;
     }
 
-    void closeVoidlight(CCObject*) {
-        if(m_fields->panel){m_fields->panel->removeFromParentAndCleanup(true);m_fields->panel=nullptr;m_fields->input=nullptr;m_fields->conversation=nullptr;}
-    }
-
-    void appendConversation(std::string const& text) {
-        if(!m_fields->conversation) return;
-        m_fields->conversation->setString(text.c_str());
-    }
-
-    void sendMessage(CCObject*) {
-        if(m_fields->waiting) { appendConversation("VOIDLIGHT\nPlease wait for the current answer..."); return; }
-        if(!m_fields->input) return;
-        std::string message=m_fields->input->getString().c_str();
-        if(message.empty()) { appendConversation("VOIDLIGHT\nWrite a question first."); return; }
-        if(message.size()>4000) { appendConversation("VOIDLIGHT\nMessage is too long (max 4000 characters)."); return; }
-        auto endpoint=Mod::get()->getSettingValue<std::string>("server-url");
-        if(endpoint.empty()) {
-            appendConversation("VOIDLIGHT\nServer URL is not configured yet. Deploy the Worker, then paste its URL in Geode mod settings.");
-            return;
+    void closePanel(CCObject*) {
+        if(m_fields->panel) {
+            m_fields->panel->removeFromParentAndCleanup(true);
+            m_fields->panel=nullptr;
+            m_fields->selectedStyle=nullptr;
+            m_fields->previewText=nullptr;
         }
-        while(!endpoint.empty() && endpoint.back()=='/') endpoint.pop_back();
-        auto req=web::WebRequest();
-        req.header("Content-Type","application/json");
-        req.timeout(std::chrono::seconds(45));
-        matjson::Value body=matjson::Value::object();
-        body["message"]=message;
-        req.bodyJSON(body);
-        m_fields->waiting=true;
-        appendConversation(("YOU\n"+message+"\n\nVOIDLIGHT\nThinking...").c_str());
-        m_fields->input->setString("");
-        m_fields->request.spawn(
-            req.post(endpoint+"/chat"),
-            [this, message](web::WebResponse response) {
-                m_fields->waiting=false;
-                if(!m_fields->panel) return;
-                if(!response.ok()) {
-                    appendConversation("VOIDLIGHT\nCould not reach the AI server. Check the Worker URL, deployment and connection.");
-                    return;
-                }
-                auto parsed=response.json();
-                if(!parsed) { appendConversation("VOIDLIGHT\nThe server returned invalid data."); return; }
-                auto answer=parsed.unwrap()["answer"].asString();
-                if(!answer) { appendConversation("VOIDLIGHT\nThe server did not return an answer."); return; }
-                appendConversation(("YOU\n"+message+"\n\nVOIDLIGHT\n"+answer.unwrap()).c_str());
-            }
-        );
     }
 
-    void onVoidlight(CCObject*) {
-        if(m_fields->panel){closeVoidlight(nullptr);return;}
+    void setStyle(std::string const& style, CCObject*) {
+        m_fields->style=style;
+        if(m_fields->selectedStyle) m_fields->selectedStyle->setString(("STYLE: "+style).c_str());
+        if(m_fields->previewText) {
+            std::string description;
+            if(style=="PURPLE GLOW") description="Dark blocks, lavender frames and soft violet light.";
+            else if(style=="MINIMAL") description="Simple silhouettes, clean spacing and a few accents.";
+            else if(style=="MODERN") description="Layered panels, tidy frames and restrained colors.";
+            else description="Dark structures, cyan highlights and sharp geometric details.";
+            m_fields->previewText->setString(description.c_str());
+        }
+    }
+
+    void onPurple(CCObject* sender) { setStyle("PURPLE GLOW",sender); }
+    void onMinimal(CCObject* sender) { setStyle("MINIMAL",sender); }
+    void onModern(CCObject* sender) { setStyle("MODERN",sender); }
+    void onCyber(CCObject* sender) { setStyle("CYBER",sender); }
+
+    void onPreview(CCObject*) {
+        FLAlertLayer::create(
+            "AUTO DECOR PREVIEW",
+            "Style: <cy>" + m_fields->style +
+            "</c>\n\nThis is the first interface build. It previews a decoration direction only; it does not change or delete anything in your level. The next step is the real object-placement generator with confirmation and undo.",
+            "OK"
+        )->show();
+    }
+
+    void onAutoDecor(CCObject*) {
+        if(m_fields->panel) { closePanel(nullptr); return; }
         auto win=CCDirector::sharedDirector()->getWinSize();
         const float w=360.f,h=270.f,scale=0.78f;
         auto panel=CCNode::create(); panel->setContentSize({w,h}); panel->setAnchorPoint({0,0});
@@ -107,23 +90,42 @@ class $modify(VoidlightEditorUI, EditorUI) {
         drawRoundedRect(bg,0,0,w,h,18.f,{0.055f,0.025f,0.12f,0.98f},{0.68f,0.43f,0.94f,1.f});
         drawRoundedRect(bg,5,5,w-10,h-10,14.f,{0.10f,0.055f,0.19f,0.25f},{0.35f,0.20f,0.52f,0.8f});
         panel->addChild(bg);
-        auto title=CCLabelBMFont::create("VOIDLIGHT AI","bigFont.fnt");
+
+        auto title=CCLabelBMFont::create("AUTO DECOR","bigFont.fnt");
         title->setScale(0.52f); title->setAnchorPoint({0,0.5f}); title->setPosition({18,h-24}); panel->addChild(title);
         auto closeLabel=CCLabelBMFont::create("X","bigFont.fnt"); closeLabel->setScale(0.42f);
-        auto close=CCMenuItemSpriteExtra::create(closeLabel,this,menu_selector(VoidlightEditorUI::closeVoidlight));
+        auto close=CCMenuItemSpriteExtra::create(closeLabel,this,menu_selector(VoidlightEditorUI::closePanel));
         close->setPosition({w-20,h-23});
-        auto sendLabel=CCLabelBMFont::create("SEND","bigFont.fnt"); sendLabel->setScale(0.38f);
-        auto send=CCMenuItemSpriteExtra::create(sendLabel,this,menu_selector(VoidlightEditorUI::sendMessage));
-        send->setPosition({w-48,27});
-        auto actions=CCMenu::create(); actions->setPosition(CCPointZero); actions->addChild(close); actions->addChild(send); panel->addChild(actions,4);
-        auto history=CCLabelBMFont::create("Ask me about Geometry Dash decoration, glow, colors or level planning.","chatFont.fnt");
-        history->setAnchorPoint({0,1}); history->setPosition({18,h-55}); history->setWidth(315.f); history->setScale(0.58f);
-        panel->addChild(history,3); m_fields->conversation=history;
-        auto input=geode::TextInput::create(255.f,"Write your question...","bigFont.fnt");
-        input->setMaxCharCount(4000); input->setCommonFilter(geode::CommonFilter::Any);
-        input->setPosition({145.f,27.f}); panel->addChild(input,5); m_fields->input=input;
-        auto hint=CCLabelBMFont::create("AI connection requires a deployed server URL.","chatFont.fnt");
-        hint->setScale(0.42f); hint->setAnchorPoint({0,0.5f}); hint->setPosition({18,10}); panel->addChild(hint,3);
+        auto previewLabel=CCLabelBMFont::create("PREVIEW","bigFont.fnt"); previewLabel->setScale(0.38f);
+        auto preview=CCMenuItemSpriteExtra::create(previewLabel,this,menu_selector(VoidlightEditorUI::onPreview));
+        preview->setPosition({w-48,25});
+        auto purpleLabel=CCLabelBMFont::create("PURPLE","bigFont.fnt"); purpleLabel->setScale(0.34f);
+        auto purple=CCMenuItemSpriteExtra::create(purpleLabel,this,menu_selector(VoidlightEditorUI::onPurple));
+        purple->setPosition({55,h-76});
+        auto minimalLabel=CCLabelBMFont::create("MINIMAL","bigFont.fnt"); minimalLabel->setScale(0.34f);
+        auto minimal=CCMenuItemSpriteExtra::create(minimalLabel,this,menu_selector(VoidlightEditorUI::onMinimal));
+        minimal->setPosition({145,h-76});
+        auto modernLabel=CCLabelBMFont::create("MODERN","bigFont.fnt"); modernLabel->setScale(0.34f);
+        auto modern=CCMenuItemSpriteExtra::create(modernLabel,this,menu_selector(VoidlightEditorUI::onModern));
+        modern->setPosition({235,h-76});
+        auto cyberLabel=CCLabelBMFont::create("CYBER","bigFont.fnt"); cyberLabel->setScale(0.34f);
+        auto cyber=CCMenuItemSpriteExtra::create(cyberLabel,this,menu_selector(VoidlightEditorUI::onCyber));
+        cyber->setPosition({315,h-76});
+        auto actions=CCMenu::create(); actions->setPosition(CCPointZero);
+        actions->addChild(close); actions->addChild(preview);
+        actions->addChild(purple); actions->addChild(minimal); actions->addChild(modern); actions->addChild(cyber);
+        panel->addChild(actions,4);
+
+        auto style=CCLabelBMFont::create("STYLE: PURPLE GLOW","bigFont.fnt");
+        style->setScale(0.42f); style->setAnchorPoint({0,0.5f}); style->setPosition({18,h-112});
+        panel->addChild(style,3); m_fields->selectedStyle=style;
+        auto description=CCLabelBMFont::create("Dark blocks, lavender frames and soft violet light.","chatFont.fnt");
+        description->setAnchorPoint({0,1}); description->setPosition({18,h-137});
+        description->setWidth(320.f); description->setScale(0.58f);
+        panel->addChild(description,3); m_fields->previewText=description;
+        auto note=CCLabelBMFont::create("PREVIEW ONLY — YOUR LEVEL IS UNCHANGED","chatFont.fnt");
+        note->setScale(0.40f); note->setAnchorPoint({0,0.5f}); note->setPosition({18,25});
+        panel->addChild(note,3);
         panel->setScale(scale); panel->setPosition({win.width-w*scale-18.f,win.height-h*scale-58.f});
         this->addChild(panel,1100); m_fields->panel=panel;
     }
