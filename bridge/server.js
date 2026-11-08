@@ -8,6 +8,7 @@ const ASSISTANT_TOKEN = process.env.BRIDGE_ASSISTANT_TOKEN || "";
 const PAIRING_TOKEN = process.env.BRIDGE_PAIRING_TOKEN || "";
 const DB_PATH = process.env.BRIDGE_DB_PATH || "./bridge.sqlite";
 const MAX_BODY = 16 * 1024;
+const COMMAND_LEASE_MS = 30_000;
 const db = new DatabaseSync(DB_PATH);
 
 db.exec(`
@@ -126,6 +127,10 @@ function route(req, res) {
   if (req.method === "GET" && url.pathname === "/v1/device/commands") {
     const device = deviceFor(req);
     if (!device) return json(res, 401, { error: "unauthorized" });
+    // Recover commands whose client disappeared before acknowledging them.
+    // The enabled commands are read-only and safe to retry.
+    db.prepare("UPDATE commands SET status='queued',claimed_at=NULL WHERE device_id=? AND status='delivered' AND claimed_at<?")
+      .run(device.id, Date.now() - COMMAND_LEASE_MS);
     const rows = db.prepare("SELECT id,kind,payload,created_at FROM commands WHERE device_id=? AND status='queued' ORDER BY created_at LIMIT 5").all(device.id);
     const claim = db.prepare("UPDATE commands SET status='delivered',claimed_at=? WHERE id=? AND status='queued'");
     const commands = rows.filter(row => Number(claim.run(Date.now(), row.id).changes) === 1)
