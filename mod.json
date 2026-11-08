@@ -6,18 +6,10 @@
   },
   "id": "gigachat.giga-chat-mod",
   "name": "GIGA-CHAT-MOD",
-  "version": "v1.3.0",
+  "version": "v1.4.0",
   "developer": "GigaChat",
-  "description": "Voidlight v1.3.0: round editor launcher and in-panel AI chat client with secure server proxy configuration.",
+  "description": "Voidlight v1.4.0: editor launcher and Auto Decor style preview foundation.",
   "dependencies": {
     "geode.node-ids": ">=v1.23.3"
-  },
-  "settings": {
-    "server-url": {
-      "name": "Voidlight AI server URL",
-      "description": "Paste the deployed Worker URL (without /chat). Leave empty until the server is deployed.",
-      "type": "string",
-      "default": ""
-    }
   }
 }
