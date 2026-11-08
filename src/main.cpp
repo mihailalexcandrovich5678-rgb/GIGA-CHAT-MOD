@@ -1,5 +1,6 @@
 #include <Geode/Geode.hpp>
 #include <cmath>
+#include <algorithm>
 #include <Geode/modify/EditorUI.hpp>
 
 using namespace geode::prelude;
