@@ -1,7 +1,50 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/MenuLayer.hpp>
+#include <Geode/utils/web.hpp>
 
 using namespace geode::prelude;
+
+namespace {
+    // Set this only after a real HTTPS bridge service has been deployed.
+    // Keeping it empty prevents the mod from contacting an unknown server.
+    constexpr std::string_view kBridgeHealthEndpoint = "";
+
+    async::TaskHolder<web::WebResponse> g_healthRequest;
+
+    void startBridge() {
+        if (kBridgeHealthEndpoint.empty()) {
+            log::info(
+                "Geode Bridge loaded in background. "
+                "No server configured; network connection is inactive."
+            );
+            return;
+        }
+
+        if (!kBridgeHealthEndpoint.starts_with("https://")) {
+            log::error("Geode Bridge refused to connect: HTTPS is required.");
+            return;
+        }
+
+        log::info("Geode Bridge: starting secure HTTPS handshake.");
+
+        g_healthRequest.spawn(
+            web::WebRequest().get(std::string(kBridgeHealthEndpoint)),
+            [](web::WebResponse response) {
+                if (response.code() >= 200 && response.code() < 300) {
+                    log::info(
+                        "Geode Bridge: HTTPS server responded with status {}.",
+                        response.code()
+                    );
+                } else {
+                    log::warn(
+                        "Geode Bridge: server returned HTTP status {}.",
+                        response.code()
+                    );
+                }
+            }
+        );
+    }
+}
 
 class $modify(GeodeBridgeMenu, MenuLayer) {
     bool init() {
@@ -9,46 +52,14 @@ class $modify(GeodeBridgeMenu, MenuLayer) {
             return false;
         }
 
-        auto menu = this->getChildByID("bottom-menu");
-        if (!menu) {
-            log::warn("Geode Bridge: bottom menu was not found.");
-            return true;
+        // The bridge starts automatically when the game reaches its main menu.
+        // No buttons, popups, level edits, or gameplay UI are created here.
+        static bool started = false;
+        if (!started) {
+            started = true;
+            startBridge();
         }
 
-        auto sprite = CCSprite::createWithSpriteFrameName("GJ_infoBtn_001.png");
-        if (!sprite) {
-            sprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
-        }
-        if (!sprite) {
-            log::warn("Geode Bridge: could not create the menu icon.");
-            return true;
-        }
-
-        auto button = CCMenuItemSpriteExtra::create(
-            sprite,
-            this,
-            menu_selector(GeodeBridgeMenu::onBridgeButton)
-        );
-        if (!button) {
-            log::warn("Geode Bridge: could not create the menu button.");
-            return true;
-        }
-
-        button->setID("geode-bridge-open-button"_spr);
-        menu->addChild(button);
-        menu->updateLayout();
-
-        log::info("Geode Bridge loaded.");
         return true;
-    }
-
-    void onBridgeButton(CCObject*) {
-        FLAlertLayer::create(
-            "Geode Bridge",
-            "Bridge prototype loaded.\n\n"
-            "The first milestone is read-only level diagnostics. "
-            "Nothing is uploaded automatically, and this prototype does not change your levels.",
-            "OK"
-        )->show();
     }
 };
