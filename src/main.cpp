@@ -145,9 +145,11 @@ namespace {
                             }
                             else if (kind == "editor.get_status") {
                                 auto result = matjson::Value::object();
+                                auto editorActive = LevelEditorLayer::get() != nullptr;
                                 result["game"] = "running";
-                                result["editor"] = "unknown";
-                                result["note"] = "Editor state inspection is not implemented yet; no level data was accessed.";
+                                result["editor"] = editorActive ? "open" : "closed";
+                                result["editor_active"] = editorActive;
+                                result["note"] = "Editor presence only; no level contents or objects were read.";
                                 co_await sendAck(base, token, id, "completed", std::move(result));
                             }
                             else {
