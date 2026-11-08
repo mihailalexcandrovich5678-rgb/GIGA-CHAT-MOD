@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Geode Bridge Relay
   version: 0.2.0
-  description: Authenticated relay API. This schema is for a separately configured assistant Action, not an automatic connection to an ordinary ChatGPT chat.
+  description: Authenticated relay API for a separately configured assistant Action. This does not automatically connect an ordinary ChatGPT conversation.
 servers:
   - url: https://YOUR-BRIDGE-HOST
 paths:
@@ -16,36 +16,14 @@ paths:
   /v1/pair/start:
     post:
       operationId: startDevicePairing
-      summary: Create a short-lived pairing code (owner-only)
+      summary: Create a short-lived one-time pairing code
       security:
         - pairingAdmin: []
       responses:
         "201":
-          description: One-time pairing code
+          description: Pairing code valid for five minutes
         "401":
           description: Invalid pairing administrator token
-        "429":
-          description: Pairing rate limit reached
-  /v1/pair/claim:
-    post:
-      operationId: claimDevicePairing
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [code]
-              properties:
-                code:
-                  type: string
-                  pattern: '^[0-9]{6}$'
-      responses:
-        "201":
-          description: Device token (shown once)
-        "401":
-          description: Invalid or expired code
         "429":
           description: Pairing rate limit reached
   /v1/assistant/devices:
@@ -56,62 +34,9 @@ paths:
         - assistantBearer: []
       responses:
         "200":
-          description: Active device IDs and last-seen timestamps
+          description: Active paired device IDs and last-seen timestamps
         "401":
           description: Invalid assistant bearer token
-  /v1/assistant/commands/{command_id}:
-    get:
-      operationId: getCommandResult
-      summary: Read command status and result
-      security:
-        - assistantBearer: []
-      parameters:
-        - name: command_id
-          in: path
-          required: true
-          schema:
-            type: string
-            pattern: '^[a-f0-9]{24}    post:
-      operationId: enqueueGameCommand
-      summary: Queue a supported command for a paired Geometry Dash device
-      security:
-        - assistantBearer: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [device_id, kind]
-              properties:
-                device_id:
-                  type: string
-                kind:
-                  type: string
-                  enum: [bridge.ping, editor.get_status]
-      responses:
-        "202":
-          description: Command queued
-        "401":
-          description: Invalid assistant bearer token
-        "400":
-          description: Command is not enabled
-components:
-  securitySchemes:
-    assistantBearer:
-      type: http
-      scheme: bearer
-    pairingAdmin:
-      type: http
-      scheme: bearer
-
-      responses:
-        "200":
-          description: Command state and optional JSON result
-        "401":
-          description: Invalid assistant bearer token
-        "404":
-          description: Command not found
   /v1/assistant/commands:
     post:
       operationId: enqueueGameCommand
@@ -133,11 +58,33 @@ components:
                   enum: [bridge.ping, editor.get_status]
       responses:
         "202":
-          description: Command queued
+          description: Command accepted and queued
+        "400":
+          description: Command kind is not enabled
         "401":
           description: Invalid assistant bearer token
-        "400":
-          description: Command is not enabled
+        "404":
+          description: Paired device not found
+  /v1/assistant/commands/{command_id}:
+    get:
+      operationId: getCommandResult
+      summary: Read command status and result
+      security:
+        - assistantBearer: []
+      parameters:
+        - name: command_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-f0-9]{24}$'
+      responses:
+        "200":
+          description: Command state and optional JSON result
+        "401":
+          description: Invalid assistant bearer token
+        "404":
+          description: Command not found
 components:
   securitySchemes:
     assistantBearer:
