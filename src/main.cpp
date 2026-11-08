@@ -4,6 +4,7 @@
 #include <Geode/utils/async.hpp>
 #include <arc/time/Sleep.hpp>
 #include <asp/time/Instant.hpp>
+#include <algorithm>
 
 using namespace geode::prelude;
 
