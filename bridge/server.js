@@ -22,9 +22,13 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS commands (
     id TEXT PRIMARY KEY, device_id TEXT NOT NULL, kind TEXT NOT NULL,
     payload TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'queued',
-    created_at INTEGER NOT NULL, claimed_at INTEGER, completed_at INTEGER
+    created_at INTEGER NOT NULL, claimed_at INTEGER, completed_at INTEGER, result TEXT
   );
 `);
+
+// Upgrade databases created by earlier bridge versions.
+const commandColumns = db.prepare("PRAGMA table_info(commands)").all().map(column => column.name);
+if (!commandColumns.includes("result")) db.exec("ALTER TABLE commands ADD COLUMN result TEXT");
 
 const hash = value => createHash("sha256").update(value).digest("hex");
 const safeEqual = (a, b) => {
@@ -134,11 +138,29 @@ function route(req, res) {
     if (!device) return json(res, 401, { error: "unauthorized" });
     const id = url.pathname.split("/")[4];
     return readBody(req).then(body => {
+      if (body.result !== undefined && (body.result === null || typeof body.result !== "object" || Array.isArray(body.result)))
+        return json(res, 400, { error: "invalid_result" });
       const status = body.status === "completed" ? "completed" : "failed";
-      const result = db.prepare("UPDATE commands SET status=?,completed_at=? WHERE id=? AND device_id=? AND status='delivered'")
-        .run(status, Date.now(), id, device.id);
-      return json(res, result.changes ? 200 : 404, { ok: Boolean(result.changes) });
+      const resultJson = body.result === undefined ? null : JSON.stringify(body.result);
+      if (resultJson && Buffer.byteLength(resultJson) > 8 * 1024)
+        return json(res, 413, { error: "result_too_large" });
+      const updated = db.prepare("UPDATE commands SET status=?,completed_at=?,result=? WHERE id=? AND device_id=? AND status='delivered'")
+        .run(status, Date.now(), resultJson, id, device.id);
+      return json(res, updated.changes ? 200 : 404, { ok: Boolean(updated.changes) });
     }).catch(() => json(res, 400, { error: "invalid_json" }));
+  }
+  if (req.method === "GET" && url.pathname === "/v1/assistant/devices") {
+    if (!assistantAuthorized(req)) return json(res, 401, { error: "assistant_unauthorized" });
+    const devices = db.prepare("SELECT id,created_at,last_seen FROM devices WHERE revoked=0 ORDER BY created_at DESC").all();
+    return json(res, 200, { devices });
+  }
+  if (req.method === "GET" && url.pathname.startsWith("/v1/assistant/commands/")) {
+    if (!assistantAuthorized(req)) return json(res, 401, { error: "assistant_unauthorized" });
+    const id = url.pathname.split("/")[4];
+    if (!/^[a-f0-9]{24}$/.test(id)) return json(res, 400, { error: "invalid_command_id" });
+    const command = db.prepare("SELECT id,device_id,kind,status,created_at,completed_at,result FROM commands WHERE id=?").get(id);
+    if (!command) return json(res, 404, { error: "command_not_found" });
+    return json(res, 200, { ...command, result: command.result ? JSON.parse(command.result) : null });
   }
   if (req.method === "POST" && url.pathname === "/v1/assistant/commands") {
     if (!assistantAuthorized(req)) return json(res, 401, { error: "assistant_unauthorized" });
