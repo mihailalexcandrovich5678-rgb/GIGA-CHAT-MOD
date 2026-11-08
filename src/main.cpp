@@ -73,12 +73,9 @@ class $modify(VoidlightEditorUI, EditorUI) {
     void onCyber(CCObject* sender) { setStyle("CYBER",sender); }
 
     void onPreview(CCObject*) {
-        FLAlertLayer::create(
-            "AUTO DECOR PREVIEW",
-            "Style: <cy>" + m_fields->style +
-            "</c>\n\nThis is the first interface build. It previews a decoration direction only; it does not change or delete anything in your level. The next step is the real object-placement generator with confirmation and undo.",
-            "OK"
-        )->show();
+        auto message = std::string("Style: <cy>") + m_fields->style +
+            "</c>\n\nThis is the first interface build. It previews a decoration direction only; it does not change or delete anything in your level. The next step is the real object-placement generator with confirmation and undo.";
+        FLAlertLayer::create("AUTO DECOR PREVIEW", message.c_str(), "OK")->show();
     }
 
     void onAutoDecor(CCObject*) {
