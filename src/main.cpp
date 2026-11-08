@@ -50,6 +50,7 @@ namespace {
         auto response = co_await web::WebRequest()
             .header("Authorization", "Bearer " + token)
             .bodyJSON(body)
+            .followRedirects(false)
             .post(base + "/v1/device/commands/" + commandId + "/ack");
         if (response.code() < 200 || response.code() >= 300) {
             log::warn("Geode Bridge: command acknowledgement failed (HTTP {}).", response.code());
@@ -62,6 +63,7 @@ namespace {
 
         auto response = co_await web::WebRequest()
             .bodyJSON(body)
+            .followRedirects(false)
             .post(base + "/v1/pair/claim");
 
         if (response.code() < 200 || response.code() >= 300) {
@@ -116,6 +118,7 @@ namespace {
         while (true) {
             auto response = co_await web::WebRequest()
                 .header("Authorization", "Bearer " + token)
+                .followRedirects(false)
                 .get(base + "/v1/device/commands");
 
             if (response.code() == 401) {
