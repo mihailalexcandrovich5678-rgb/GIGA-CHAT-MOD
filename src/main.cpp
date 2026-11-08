@@ -96,7 +96,7 @@ class $modify(VoidlightEditorUI, EditorUI) {
 
         float startX = m_editorLayer->getLastObjectX() + 90.f;
         for (int row = 0; row < rows; ++row) {
-            for (int col = 0; pattern[row][col] != '\\0'; ++col) {
+            for (int col = 0; pattern[row][col] != '\0'; ++col) {
                 if (pattern[row][col] != '#') continue;
                 auto object = m_editorLayer->createObject(
                     1, CCPointMake(startX + col * 30.f, 90.f + (rows - row - 1) * 30.f), false
