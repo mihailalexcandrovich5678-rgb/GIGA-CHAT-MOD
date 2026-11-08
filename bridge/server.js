@@ -5,6 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || "0.0.0.0";
 const ASSISTANT_TOKEN = process.env.BRIDGE_ASSISTANT_TOKEN || "";
+const PAIRING_TOKEN = process.env.BRIDGE_PAIRING_TOKEN || "";
 const DB_PATH = process.env.BRIDGE_DB_PATH || "./bridge.sqlite";
 const MAX_BODY = 16 * 1024;
 const db = new DatabaseSync(DB_PATH);
@@ -28,7 +29,7 @@ db.exec(`
 const hash = value => createHash("sha256").update(value).digest("hex");
 const safeEqual = (a, b) => {
   const aa = Buffer.from(a); const bb = Buffer.from(b);
-  return aa.length === bb.length && timingSafeEqual(aa, bb);
+  return aa.length > 0 && aa.length === bb.length && timingSafeEqual(aa, bb);
 };
 const json = (res, status, value) => {
   const body = JSON.stringify(value);
@@ -55,20 +56,46 @@ function deviceFor(req) {
 }
 function assistantAuthorized(req) {
   const supplied = bearer(req);
-  return ASSISTANT_TOKEN && supplied && safeEqual(supplied, ASSISTANT_TOKEN);
+  return Boolean(ASSISTANT_TOKEN && supplied && safeEqual(supplied, ASSISTANT_TOKEN));
 }
+function pairingAuthorized(req) {
+  const supplied = bearer(req);
+  return Boolean(PAIRING_TOKEN && supplied && safeEqual(supplied, PAIRING_TOKEN));
+}
+
+// In-memory throttling: source IPs are neither persisted nor logged.
+const attempts = new Map();
+function rateLimited(req, bucket, limit, windowMs) {
+  const key = bucket + ":" + (req.socket.remoteAddress || "unknown");
+  const now = Date.now();
+  const old = attempts.get(key);
+  if (!old || now - old.startedAt >= windowMs) {
+    attempts.set(key, { startedAt: now, count: 1 });
+    return false;
+  }
+  old.count += 1;
+  return old.count > limit;
+}
+setInterval(() => {
+  const cutoff = Date.now() - 10 * 60_000;
+  for (const [key, value] of attempts) if (value.startedAt < cutoff) attempts.delete(key);
+}, 60_000).unref();
 function route(req, res) {
   const url = new URL(req.url, "http://localhost");
   if (req.method === "GET" && url.pathname === "/health") {
     return json(res, 200, { ok: true, service: "geode-bridge", protocol: 1 });
   }
   if (req.method === "POST" && url.pathname === "/v1/pair/start") {
+    if (!pairingAuthorized(req)) return json(res, 401, { error: "pairing_admin_unauthorized" });
+    if (rateLimited(req, "pair-start", 5, 10 * 60_000)) return json(res, 429, { error: "rate_limited" });
     const code = String(randomInt(100000, 1000000));
+    db.prepare("DELETE FROM pair_codes WHERE expires_at < ? OR used=1").run(Date.now());
     db.prepare("INSERT INTO pair_codes(code_hash, expires_at) VALUES(?,?)")
       .run(hash(code), Date.now() + 5 * 60_000);
     return json(res, 201, { pairing_code: code, expires_in_seconds: 300, note: "Keep this code private." });
   }
   if (req.method === "POST" && url.pathname === "/v1/pair/claim") {
+    if (rateLimited(req, "pair-claim", 10, 10 * 60_000)) return json(res, 429, { error: "rate_limited" });
     return readBody(req).then(body => {
       const code = String(body.code || "");
       if (!/^\d{6}$/.test(code)) return json(res, 400, { error: "invalid_pairing_code" });
@@ -77,10 +104,12 @@ function route(req, res) {
       const deviceId = randomBytes(12).toString("hex");
       const token = randomBytes(32).toString("base64url");
       const tx = db.transaction(() => {
-        db.prepare("UPDATE pair_codes SET used=1 WHERE code_hash=?").run(hash(code));
+        const changed = db.prepare("UPDATE pair_codes SET used=1 WHERE code_hash=? AND used=0 AND expires_at>=?").run(hash(code), Date.now());
+        if (changed.changes !== 1) return false;
         db.prepare("INSERT INTO devices(id,token_hash,created_at) VALUES(?,?,?)").run(deviceId, hash(token), Date.now());
+        return true;
       });
-      tx();
+      if (!tx()) return json(res, 409, { error: "pairing_code_already_used" });
       return json(res, 201, { device_id: deviceId, device_token: token, warning: "Store this token securely; it is shown only once." });
     }).catch(() => json(res, 400, { error: "invalid_json" }));
   }
