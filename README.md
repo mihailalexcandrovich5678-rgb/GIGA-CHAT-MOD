@@ -1,43 +1,54 @@
-# Geode Bridge
+# GIGA-CHAT-MOD — Geode Bridge
 
-A background companion mod for Geometry Dash 2.2 and Geode.
+A background companion mod for Geometry Dash 2.2 and Geode, with a private relay server.
 
-## Current milestone
+## Current implementation
 
-- The mod initializes automatically when Geometry Dash reaches its main menu.
-- It adds no in-game buttons, popups, overlays, or other UI.
-- It does not inspect or modify levels yet.
-- It does not send gameplay data.
-- The HTTPS health-check client is scaffolded, but remains inactive until a real bridge server endpoint is configured.
+- The Geode client starts when Geometry Dash initializes its main menu.
+- It adds no gameplay buttons, popups, overlays, or editor UI.
+- The mod settings contain two configuration fields: the HTTPS bridge server URL and a one-time pairing code.
+- The client can claim a pairing code, store its device token in Geode's app-private mod save data, poll for commands, and acknowledge results.
+- The currently enabled commands are `bridge.ping` and `editor.get_status`.
+- `bridge.ping` is implemented.
+- `editor.get_status` currently returns an explicit placeholder (`editor: "unknown"`); actual editor-state detection is not implemented.
+- No level data is read or modified. No level-editing commands are enabled.
 
-## Secure connection status
+## Build status
 
-The client refuses non-HTTPS endpoints and uses Geode's asynchronous WebRequest API, so network activity does not block the game thread. The endpoint is intentionally empty in this prototype. This is deliberate: the project does not yet have a deployed server, and the mod must not send data to an unknown or placeholder host.
+GitHub Actions builds Windows, Android 64-bit, and Android 32-bit targets and packages the artifacts. A successful workflow means those configured targets compiled and the package step completed; it does not mean the mod has been installed or tested inside Geometry Dash on a physical phone.
 
-A working assistant connection still requires a separately deployed bridge server and an explicit pairing/authorization flow. Installing the mod cannot attach it directly to an existing ChatGPT conversation.
+## Bridge server
 
-## Privacy
+The Node.js 24 relay is in `bridge/`. It provides one-time device pairing, authenticated device polling, command acknowledgements, assistant-authenticated command queueing, and command-result retrieval.
 
-- No account passwords, ChatGPT credentials, or API keys are collected.
-- No gameplay data or level contents are uploaded.
-- No connection is attempted while the server endpoint is unset.
-- Future data sharing must be limited, disclosed, and authorized by the player.
-- The first editor integration should be read-only until level-editing commands are designed and reviewed.
+The server accepts only `bridge.ping` and `editor.get_status`. It stores device-token hashes in SQLite. Pairing and assistant credentials must be configured as private hosting environment variables:
 
-## Build
+- `BRIDGE_PAIRING_TOKEN`
+- `BRIDGE_ASSISTANT_TOKEN`
 
-This repository uses the Geode SDK and GitHub Actions workflow in `.github/workflows/multi-platform.yml`.
+Use separate long random values. Never commit them, place them in the mod, or paste them into chat. The deployment blueprint is `render.yaml`; a persistent disk is required for the SQLite database.
 
+## Pairing after private deployment
 
-## Bridge relay server
+1. Deploy the relay and configure both private environment secrets.
+2. Use the owner-authenticated `POST /v1/pair/start` endpoint to generate a five-minute code.
+3. Open Geode's settings for this mod (not a new in-game menu).
+4. Enter the HTTPS server URL and the six-digit one-time pairing code.
+5. Restart Geometry Dash so the client can claim the code and begin polling.
+6. Revoke the paired device on the server if access should stop.
 
-A Node.js 24 relay foundation is available in `bridge/`. It includes one-time device pairing,
-device-authenticated command polling, command acknowledgements, an assistant-authenticated
-command endpoint, an OpenAPI schema for a separately configured Action, and a Render deployment
-blueprint at the repository root.
+The raw device token is stored in Geode's app-private mod save data. This is sandboxed by the mobile OS, but it is not a hardware-backed encrypted keystore.
 
-The relay currently accepts only `bridge.ping` and `editor.get_status`. The Geode client
-still needs its device-pairing and polling implementation, and the server must be deployed
-before a real connection can be tested. This repository cannot attach the ordinary ChatGPT
-conversation to the relay by itself; a separately configured, authorized ChatGPT Action or
-connector is required for that final hop.
+## ChatGPT integration limitation
+
+This repository does not automatically connect an ordinary ChatGPT conversation to the relay. That final connection requires a separately configured, authorized ChatGPT Action/connector or another client that can authenticate to the assistant API. Do not treat a successful mod build as proof that this chat can control the game.
+
+## Development checks
+
+From `bridge/`, run:
+
+```sh
+npm run check
+```
+
+This runs JavaScript syntax checks and the bridge smoke tests. The Geode client is built by the GitHub Actions workflow in `.github/workflows/multi-platform.yml`.
