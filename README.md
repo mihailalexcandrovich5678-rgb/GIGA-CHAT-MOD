@@ -10,7 +10,7 @@ A background companion mod for Geometry Dash 2.2 and Geode, with a private relay
 - The client can claim a pairing code, store its device token in Geode's app-private mod save data, poll for commands, and acknowledge results.
 - The currently enabled commands are `bridge.ping` and `editor.get_status`.
 - `bridge.ping` is implemented.
-- `editor.get_status` currently returns an explicit placeholder (`editor: "unknown"`); actual editor-state detection is not implemented.
+- `editor.get_status` checks whether `LevelEditorLayer` is currently active and reports `editor: "open"` or `editor: "closed"` plus `editor_active`; it does not inspect level contents or objects.
 - No level data is read or modified. No level-editing commands are enabled.
 
 ## Build status
