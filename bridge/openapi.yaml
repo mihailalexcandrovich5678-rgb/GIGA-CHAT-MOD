@@ -1,0 +1,46 @@
+openapi: 3.1.0
+info:
+  title: Geode Bridge Relay
+  version: 0.1.0
+  description: Authenticated relay API. This schema is for a separately configured assistant Action, not an automatic connection to an ordinary ChatGPT chat.
+servers:
+  - url: https://YOUR-BRIDGE-HOST
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      security: []
+      operationId: health
+      responses:
+        "200":
+          description: Service health
+  /v1/assistant/commands:
+    post:
+      operationId: enqueueGameCommand
+      summary: Queue a supported command for a paired Geometry Dash device
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [device_id, kind]
+              properties:
+                device_id:
+                  type: string
+                kind:
+                  type: string
+                  enum: [bridge.ping, editor.get_status]
+      responses:
+        "202":
+          description: Command queued
+        "401":
+          description: Invalid assistant bearer token
+        "400":
+          description: Command is not enabled
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
