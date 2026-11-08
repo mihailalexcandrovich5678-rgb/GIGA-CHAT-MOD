@@ -163,7 +163,7 @@ namespace {
                 log::warn("Geode Bridge: command poll returned HTTP {}.", response.code());
             }
 
-            co_await arc::sleepUntil(asp::Instant::now() + asp::Duration::fromSecs(2.5));
+            co_await arc::sleepUntil(asp::Instant::now() + asp::Duration::fromSecs(2.5).value());
         }
     }
 
