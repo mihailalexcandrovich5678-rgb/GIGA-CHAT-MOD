@@ -27,3 +27,17 @@ A working assistant connection still requires a separately deployed bridge serve
 ## Build
 
 This repository uses the Geode SDK and GitHub Actions workflow in `.github/workflows/multi-platform.yml`.
+
+
+## Bridge relay server
+
+A Node.js 24 relay foundation is available in `bridge/`. It includes one-time device pairing,
+device-authenticated command polling, command acknowledgements, an assistant-authenticated
+command endpoint, an OpenAPI schema for a separately configured Action, and a Render deployment
+blueprint at the repository root.
+
+The relay currently accepts only `bridge.ping` and `editor.get_status`. The Geode client
+still needs its device-pairing and polling implementation, and the server must be deployed
+before a real connection can be tested. This repository cannot attach the ordinary ChatGPT
+conversation to the relay by itself; a separately configured, authorized ChatGPT Action or
+connector is required for that final hop.
