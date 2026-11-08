@@ -22,7 +22,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
-      - name: Check server syntax
-        run: node --check bridge/server.js
+      - name: Check bridge syntax and end-to-end smoke test
+        working-directory: bridge
+        run: npm run check
       - name: Check package metadata
         run: node -e "const p=require('./bridge/package.json'); if(p.engines.node !== '>=24') process.exit(1)"
